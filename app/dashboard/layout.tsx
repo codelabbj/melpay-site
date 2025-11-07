@@ -98,9 +98,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="rounded-lg">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profil</span>
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                  <Link href="/dashboard/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profil</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive rounded-lg">

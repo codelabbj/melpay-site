@@ -62,8 +62,8 @@ api.interceptors.response.use(
       error.response?.data?.details ||
       error.response?.data?.detail ||
       error.response?.data?.error ||
-      error.response?.data?.message ||
-      (typeof error.response?.data === "string" ? error.response.data : fallback)
+      error.response?.data?.message || fallback
+      //(typeof error.response?.data === "string" ? error.response.data : fallback)
 
     const lang = detectLang(backendMsg)
     toast.error(backendMsg, { style: { direction: "ltr" } })
