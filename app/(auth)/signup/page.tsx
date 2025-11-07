@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authApi } from "@/lib/api-client"
 import { toast } from "react-hot-toast"
-import { Loader2, Sparkles, UserPlus, CheckCircle, Eye, EyeOff } from "lucide-react"
+import { Loader2, UserPlus, CheckCircle, Eye, EyeOff } from "lucide-react"
 
 const signupSchema = z
   .object({
@@ -60,11 +60,12 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row overflow-x-hidden">
       {/* Left Side - Visual Design */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary/80 to-[#2563eb]">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-[#2563eb]/20"></div>
-        
-        <div className="absolute top-20 left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#2563eb]/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-accent to-primary/50">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20"></div>
+
+            {/* Animated background elements */}
+            <div className="absolute top-20 left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         
         <div className="relative z-10 flex flex-col justify-center items-center text-white p-8 xl:p-12 w-full">
           <div className="mb-6 xl:mb-8">
@@ -100,10 +101,10 @@ export default function SignupPage() {
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-6 xl:p-8 bg-gradient-to-br from-background via-background to-primary/5 min-h-screen lg:min-h-0 w-full">
         <div className="w-full max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl">
           <div className="mb-6 sm:mb-8 text-center lg:text-left">
-            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-primary to-[#2563eb] mb-3 sm:mb-4 lg:hidden">
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-primary to-accent mb-3 sm:mb-4 lg:hidden">
               <UserPlus className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-[#2563eb] bg-clip-text text-transparent">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Créer un compte
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground">Remplissez le formulaire pour créer votre compte</p>
@@ -224,8 +225,8 @@ export default function SignupPage() {
               </div>
 
               <Button 
-                type="submit" 
-                className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary to-[#2563eb] hover:from-primary/90 hover:to-[#2563eb]/90 text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
+                type="submit"
+                className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
                 disabled={isLoading}
               >
                 {isLoading ? (

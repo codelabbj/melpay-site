@@ -234,8 +234,8 @@ export default function NotificationsPage() {
               onClick={() => router.back()}
               className="flex items-center gap-2"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Back
+                <ArrowLeft className="h-4 w-4" />
+                Retour
             </Button>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -243,7 +243,7 @@ export default function NotificationsPage() {
                 <h1 className="text-3xl font-bold">Notifications</h1>
               </div>
               <p className="text-muted-foreground">
-                Your notification center
+                Vos  notifications
               </p>
             </div>
           </div>
@@ -266,12 +266,12 @@ export default function NotificationsPage() {
             {isRefreshing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Refreshing...
+                En cours...
               </>
             ) : (
               <>
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh
+                Rafraîchir
               </>
             )}
           </Button>
@@ -287,7 +287,7 @@ export default function NotificationsPage() {
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Bell className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground text-center">
-                No notifications yet
+                Aucune notification pour le moment
               </p>
             </CardContent>
           </Card>
@@ -345,7 +345,7 @@ export default function NotificationsPage() {
                             className="flex items-center gap-2"
                           >
                             <Check className="h-4 w-4" />
-                            <span className="hidden sm:inline">Mark as read</span>
+                            <span className="hidden sm:inline">Marqué comme lu</span>
                           </Button>
                         )}
                       </div>
@@ -363,7 +363,7 @@ export default function NotificationsPage() {
                   onClick={() => fetchNotifications(page - 1)}
                   disabled={!hasPrevious || isLoading}
                 >
-                  Previous
+                  Précédent
                 </Button>
                 <span className="text-sm text-muted-foreground">
                   Page {page}
@@ -373,7 +373,7 @@ export default function NotificationsPage() {
                   onClick={() => fetchNotifications(page + 1)}
                   disabled={!hasNext || isLoading}
                 >
-                  Next
+                  Suivant
                 </Button>
               </div>
             )}

@@ -12,8 +12,10 @@ import { Label } from "@/components/ui/label"
 import { useAuth } from "@/lib/auth-context"
 import { authApi } from "@/lib/api-client"
 import { toast } from "react-hot-toast"
-import { Loader2, Shield, Sparkles, Eye, EyeOff } from "lucide-react"
+import { Loader2, Eye, EyeOff } from "lucide-react"
 import { setupNotifications } from "@/lib/fcm-helper"
+import Image from "next/image";
+import logo from "@/public/logo.png"
 
 const loginSchema = z.object({
   email_or_phone: z.string().min(1, "Email ou téléphone requis"),
@@ -82,17 +84,16 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row overflow-x-hidden">
       {/* Left Side - Visual Design */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary/80 to-[#2563eb]">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-[#2563eb]/20"></div>
-        
-        <div className="absolute top-20 left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#2563eb]/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        
-        <div className="relative z-10 flex flex-col justify-center items-center text-white p-8 xl:p-12 w-full">
+        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-accent to-primary/50">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20"></div>
+
+            {/* Animated background elements */}
+            <div className="absolute top-20 left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+
+            <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 w-full">
           <div className="mb-6 xl:mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 xl:w-20 xl:h-20 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 mb-4 xl:mb-6">
-              {/* <Shield className="w-8 h-8 xl:w-10 xl:h-10 text-white" /> */}
-            </div>
+              <Image src={logo} alt="logo" className="w-20 h-20 rounded-lg border-white/20 mb-6" />
             <h1 className="text-4xl xl:text-5xl font-bold mb-3 xl:mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
               ZEFEST
             </h1>
@@ -122,10 +123,10 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-6 xl:p-8 bg-gradient-to-br from-background via-background to-primary/5 min-h-screen lg:min-h-0 w-full">
         <div className="w-full max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl">
           <div className="mb-6 sm:mb-8 text-center lg:text-left">
-            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-primary to-[#2563eb] mb-3 sm:mb-4 lg:hidden">
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-primary to-accent mb-3 sm:mb-4 lg:hidden">
               {/* <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-white" /> */}
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-[#2563eb] bg-clip-text text-transparent">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Connexion
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground">Entrez vos identifiants pour accéder à votre compte</p>
@@ -181,7 +182,7 @@ export default function LoginPage() {
 
               <Button 
                 type="submit" 
-                className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary to-[#2563eb] hover:from-primary/90 hover:to-[#2563eb]/90 text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
+                className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
                 disabled={isLoading}
               >
                 {isLoading ? (

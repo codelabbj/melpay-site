@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { LogOut, User, Loader2, Bell } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import Image from "next/image";
+import logo from "@/public/logo.png"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -56,8 +58,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Top row with logo and user menu */}
           <div className="flex h-20 items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/dashboard" className="flex items-center gap-2 group">
-                <h1 className="text-2xl font-bold gradient-text group-hover:scale-105 transition-transform">ZEFEST</h1>
+              <Link href="/dashboard" className="group">
+                  <div className="flex items-center group-hover:scale-105 transition-transform ">
+                      <Image src={logo} alt="logo" className="rounded-lg h-15 w-auto"/>
+                      <h1 className="text-2xl font-bold gradient-text">ZEFAST</h1>
+                  </div>
+
               </Link>
             </div>
 
@@ -78,7 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-12 w-12 rounded-full ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
                     <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-[#2563eb] text-primary-foreground font-bold text-lg">{userInitials}</AvatarFallback>
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-accent/40 text-primary-foreground font-bold text-lg">{userInitials}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
