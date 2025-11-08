@@ -61,7 +61,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link href="/dashboard" className="group">
                   <div className="flex items-center group-hover:scale-105 transition-transform ">
                       <Image src={logo} alt="logo" className="rounded-lg h-15 w-auto"/>
-                      <h1 className="text-2xl font-bold gradient-text">ZEFAST</h1>
+                      <h1 className="text-2xl font-bold gradient-text">MELPAY</h1>
                   </div>
 
               </Link>

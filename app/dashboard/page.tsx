@@ -86,13 +86,18 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-10 px-4 sm:px-0">
+    <div className="space-y-6 sm:space-y-8 px-4 sm:px-0">
       {/* Welcome section */}
-      <div className="space-y-2 sm:space-y-3">
-        <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight gradient-text">
-          Bienvenue, {user?.first_name}! 👋
-        </h1>
-        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground">Gérez vos dépôts et retraits en toute simplicité</p>
+      <div className="space-y-3 sm:space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="h-1 w-12 sm:w-16 bg-gradient-to-r from-primary to-transparent rounded-full"></div>
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+            <span className="gradient-text">Bienvenue, {user?.first_name}!</span>
+          </h1>
+        </div>
+        <p className="text-sm sm:text-base md:text-lg text-muted-foreground pl-0 sm:pl-20">
+          Gérez vos dépôts et retraits en toute simplicité
+        </p>
       </div>
 
       {/* Balance card */}
@@ -126,79 +131,73 @@ export default function DashboardPage() {
       </Card> */}
 
       {/* Quick actions */}
-      <div className="space-y-4 sm:space-y-6">
-        <div className="grid grid-cols-3 gap-2 sm:gap-4 sm:flex sm:flex-row">
-          <Link href="/dashboard/deposit" className="group">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-deposit via-deposit/90 to-deposit/80 p-3 sm:p-4 lg:p-6 text-white shadow-lg hover:shadow-xl hover:shadow-deposit/40 transition-all duration-300 hover:scale-[1.02] border-2 border-deposit/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10 flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
-                <div className="p-2 sm:p-3 lg:p-4 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 group-hover:bg-white/30 transition-all shrink-0">
-                  <ArrowDownToLine className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
+      <div className="space-y-4 sm:space-y-5">
+        <div className="flex gap-3 sm:gap-4 sm:grid sm:grid-cols-3 w-4/5">
+          <Link href="/dashboard/deposit" className="group flex-1 sm:flex-none">
+            <Card className="relative overflow-hidden border-2 border-deposit/30 bg-gradient-to-br from-deposit via-deposit/65 to-deposit/50 hover:border-deposit/50 transition-all duration-300 hover:shadow-lg hover:shadow-deposit/40 scale-75 sm:scale-100">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-deposit/20 rounded-full blur-3xl group-hover:bg-deposit/30 transition-all duration-500"></div>
+              <CardContent className="p-1 sm:p-5 lg:p-6 relative">
+                <div className=" flex flex-col sm:flex-row items-center sm:items-start sm:justify-between">
+                  <div className="p-3 sm:p-3 rounded-2xl bg-deposit/70 text-secondary-foreground ring-1 ring-deposit group-hover:scale-110 transition-transform duration-300 invisible sm:visible">
+                    <ArrowDownToLine className="h-6 w-6 visible" />
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-deposit/70 group-hover:translate-x-1 group-hover:text-deposit transition-all duration-300 hidden sm:block" />
                 </div>
-                <div className="flex-1 min-w-0 text-center sm:text-left">
-                  <h3 className="text-xs sm:text-sm lg:text-xl font-bold">Dépôt</h3>
-                  <p className="text-[10px] sm:text-xs lg:text-sm text-white/90 hidden sm:block">Rechargez rapidement</p>
-                </div>
-                <div className="text-lg sm:text-xl lg:text-2xl font-bold group-hover:translate-x-1 transition-transform shrink-0 hidden sm:block">
-                  →
-                </div>
-              </div>
-            </div>
+                <h3 className="text-lg sm:text-xl font-bold text-foreground mt-2 sm:mt-3 hidden sm:block">Dépôt</h3>
+              </CardContent>
+            </Card>
           </Link>
 
-          <Link href="/dashboard/withdrawal" className="group">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-withdrawal via-withdrawal/90 to-withdrawal/80 p-3 sm:p-4 lg:p-6 text-white shadow-lg hover:shadow-xl hover:shadow-withdrawal/40 transition-all duration-300 hover:scale-[1.02] border-2 border-withdrawal/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10 flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
-                <div className="p-2 sm:p-3 lg:p-4 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 group-hover:bg-white/30 transition-all shrink-0">
-                  <ArrowUpFromLine className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
+          <Link href="/dashboard/withdrawal" className="group flex-1 sm:flex-none">
+            <Card className="relative overflow-hidden border-2 border-withdrawal/30 bg-gradient-to-br from-withdrawal via-withdrawal/65 to-withdrawal/50 hover:border-withdrawal/50 transition-all duration-300 hover:shadow-lg hover:shadow-withdrawal/40 scale-75 sm:scale-100">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-withdrawal/20 rounded-full blur-3xl group-hover:bg-withdrawal/30 transition-all duration-500"></div>
+              <CardContent className="p-1 sm:p-5 lg:p-6 relative">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between">
+                  <div className="p-3 sm:p-3 rounded-2xl bg-withdrawal/70 text-secondary-foreground ring-1 ring-withdrawal group-hover:scale-110 transition-transform duration-300 invisible sm:visible">
+                    <ArrowUpFromLine className="h-6 w-6 visible" />
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-withdrawal/70 group-hover:translate-x-1 group-hover:text-withdrawal transition-all duration-300 hidden sm:block" />
                 </div>
-                <div className="flex-1 min-w-0 text-center sm:text-left">
-                  <h3 className="text-xs sm:text-sm lg:text-xl font-bold">Retrait</h3>
-                  <p className="text-[10px] sm:text-xs lg:text-sm text-white/90 hidden sm:block">Retirez vos gains</p>
-                </div>
-                <div className="text-lg sm:text-xl lg:text-2xl font-bold group-hover:translate-x-1 transition-transform shrink-0 hidden sm:block">
-                  →
-                </div>
-              </div>
-            </div>
+                <h3 className="text-lg sm:text-xl font-bold text-foreground mt-2 sm:mt-3 hidden sm:block">Retrait</h3>
+              </CardContent>
+            </Card>
           </Link>
 
-          <Link href="/dashboard/phones" className="group">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-3 sm:p-4 lg:p-6 text-white shadow-lg hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 hover:scale-[1.02] border-2 border-primary/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10 flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
-                <div className="p-2 sm:p-3 lg:p-4 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 group-hover:bg-white/30 transition-all shrink-0">
-                  <Phone className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
+          <Link href="/dashboard/phones" className="group flex-1 sm:flex-none">
+            <Card className="relative overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary via-primary/65 to-primary/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/40 scale-75 sm:scale-100">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-all duration-500"></div>
+              <CardContent className="p-1 sm:p-5 lg:p-6 relative">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between">
+                  <div className="p-3 sm:p-3 rounded-2xl bg-primary/70 text-secondary-foreground ring-1 ring-primary group-hover:scale-110 transition-transform duration-300 invisible sm:visible">
+                    <Smartphone className="h-6 w-6 visible" />
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-primary/70 group-hover:translate-x-1 group-hover:text-primary transition-all duration-300 hidden sm:block" />
                 </div>
-                <div className="flex-1 min-w-0 text-center sm:text-left">
-                  <h3 className="text-xs sm:text-sm lg:text-xl font-bold leading-tight">Numéros & IDs</h3>
-                  <p className="text-[10px] sm:text-xs lg:text-sm text-white/90 hidden sm:block">Gérez vos numéros et IDs</p>
-                </div>
-                <div className="text-lg sm:text-xl lg:text-2xl font-bold group-hover:translate-x-1 transition-transform shrink-0 hidden sm:block">
-                  →
-                </div>
-              </div>
-            </div>
+                <h3 className="text-lg sm:text-xl font-bold text-foreground mt-2 sm:mt-3 hidden sm:block">Numéros & IDs</h3>
+              </CardContent>
+            </Card>
           </Link>
         </div>
       </div>
 
       {/* Recent activity */}
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Activité récente</h2>
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-1 bg-primary rounded-full"></div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Activité récente</h2>
+          </div>
           <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={fetchRecentTransactions}
               disabled={isLoadingTransactions}
-              className="rounded-xl border-2 flex-1 sm:flex-initial"
+              className="rounded-xl border-2 hover:border-primary/50 flex-1 sm:flex-initial transition-colors"
             >
               <RefreshCw className={`h-4 w-4 ${isLoadingTransactions ? 'animate-spin' : ''}`} />
             </Button>
-            <Button asChild variant="outline" size="sm" className="rounded-xl border-2 flex-1 sm:flex-initial">
+            <Button asChild variant="outline" size="sm" className="rounded-xl border-2 hover:border-primary/50 flex-1 sm:flex-initial transition-colors">
               <Link href="/dashboard/history" className="flex items-center justify-center gap-2">
                 <span className="hidden sm:inline">Voir tout</span>
                 <span className="sm:hidden">Tout</span>
@@ -209,47 +208,53 @@ export default function DashboardPage() {
         </div>
         
         {isLoadingTransactions ? (
-          <Card className="border-2">
-            <CardContent className="flex items-center justify-center py-8 sm:py-12">
-              <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-primary" />
+          <Card className="border-2 border-dashed">
+            <CardContent className="flex items-center justify-center py-12 sm:py-16">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Chargement...</p>
+              </div>
             </CardContent>
           </Card>
         ) : recentTransactions.length === 0 ? (
-          <Card className="border-2 border-dashed">
+          <Card className="border-2 border-dashed border-muted-foreground/20">
             <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16">
-              <div className="p-3 sm:p-4 rounded-2xl bg-muted/50 mb-4 sm:mb-6">
-                <Wallet className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl"></div>
+                <div className="relative p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 ring-1 ring-primary/10">
+                  <Wallet className="h-12 w-12 sm:h-16 sm:w-16 text-primary" />
+                </div>
               </div>
-              <p className="text-base sm:text-lg font-semibold text-muted-foreground text-center mb-1 sm:mb-2">Aucune transaction récente</p>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center">Vos transactions apparaîtront ici</p>
+              <p className="text-base sm:text-lg font-bold text-foreground text-center mb-2">Aucune transaction récente</p>
+              <p className="text-xs sm:text-sm text-muted-foreground text-center max-w-xs">Vos transactions apparaîtront ici une fois que vous effectuez un dépôt ou retrait</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-2 sm:space-y-3">
+          <div className="space-y-3">
             {recentTransactions.map((transaction) => (
-              <Card key={transaction.id} className="group hover:shadow-xl hover:scale-[1.01] transition-all duration-300 border-2 border-transparent hover:border-primary/20 bg-gradient-to-r from-card via-card to-transparent hover:via-primary/5">
-                <CardContent className="p-3 sm:p-4 lg:p-5">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+              <Card key={transaction.id} className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/30 overflow-hidden">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0 w-full">
-                      <div className={`p-2 sm:p-3 rounded-xl shrink-0 ${
-                        transaction.type_trans === "deposit" 
-                          ? "bg-gradient-to-br from-deposit/20 to-deposit/10 text-deposit ring-2 ring-deposit/10" 
-                          : "bg-gradient-to-br from-withdrawal/20 to-withdrawal/10 text-withdrawal ring-2 ring-withdrawal/10"
+                      <div className={`p-2.5 sm:p-3 rounded-2xl shrink-0 transition-transform group-hover:scale-110 ${
+                        transaction.type_trans === "deposit"
+                          ? "bg-deposit/10 text-deposit ring-2 ring-deposit/20"
+                          : "bg-withdrawal/10 text-withdrawal ring-2 ring-withdrawal/20"
                       }`}>
                         {transaction.type_trans === "deposit" ? (
-                          <ArrowDownToLine className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <ArrowDownToLine className="h-5 w-5" />
                         ) : (
-                          <ArrowUpFromLine className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <ArrowUpFromLine className="h-5 w-5" />
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-1 sm:mb-1.5">
-                          <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5">
                             <h3 className="font-bold text-sm sm:text-base text-foreground">#{transaction.reference}</h3>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-5 w-5 sm:h-6 sm:w-6 rounded-md hover:bg-muted"
+                              className="h-6 w-6 rounded-lg hover:bg-muted/80"
                               onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
@@ -258,24 +263,24 @@ export default function DashboardPage() {
                               title="Copier la référence"
                             >
                               {copiedReference === transaction.reference ? (
-                                <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-green-600" />
+                                <Check className="h-3.5 w-3.5 text-success" />
                               ) : (
-                                <Copy className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground hover:text-foreground" />
+                                <Copy className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
                               )}
                             </Button>
                           </div>
                           {getTypeBadge(transaction.type_trans)}
                           {getStatusBadge(transaction.status)}
                         </div>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
-                          <span className="font-medium">{transaction.app}</span>
-                          <span className="hidden sm:inline">•</span>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="font-medium px-2 py-0.5 rounded-md bg-muted/50">{transaction.app}</span>
+                          <span>•</span>
                           <span className="truncate">{transaction.phone_number}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="text-left sm:text-right shrink-0 w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 flex sm:flex-col items-start sm:items-end justify-between sm:justify-start gap-1 sm:gap-1">
-                      <p className={`text-base sm:text-lg font-bold ${
+                    <div className="text-left sm:text-right shrink-0 w-full sm:w-auto border-t sm:border-t-0 border-border/50 pt-3 sm:pt-0 flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
+                      <p className={`text-lg sm:text-xl font-bold ${
                         transaction.type_trans === "deposit" ? "text-deposit" : "text-withdrawal"
                       }`}>
                         {transaction.type_trans === "deposit" ? "+" : "-"}
@@ -285,7 +290,7 @@ export default function DashboardPage() {
                           minimumFractionDigits: 0,
                         })}
                       </p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {format(new Date(transaction.created_at), "dd MMM à HH:mm", {
                           locale: fr,
                         })}
