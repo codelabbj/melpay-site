@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowDownToLine, ArrowUpFromLine, History, Wallet, Loader2, ArrowRight, RefreshCw, Copy, Check, Phone, Smartphone } from "lucide-react"
+import { ArrowDownToLine, ArrowUpFromLine, Wallet, Loader2, ArrowRight, RefreshCw, Copy, Check, Smartphone } from "lucide-react"
 import Link from "next/link"
 import { transactionApi } from "@/lib/api-client"
 import type { Transaction } from "@/lib/types"
