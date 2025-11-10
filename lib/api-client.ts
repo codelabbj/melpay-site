@@ -1,14 +1,14 @@
 import api from "./api"
 import type {
-  AuthResponse,
-  Network,
-  UserPhone,
-  Platform,
-  UserAppId,
-  Transaction,
-  PaginatedResponse,
-  Notification,
-  Bonus,
+    AuthResponse,
+    Network,
+    UserPhone,
+    Platform,
+    UserAppId,
+    Transaction,
+    PaginatedResponse,
+    Notification,
+    Bonus, BetId,
 } from "./types"
 
 export const authApi = {
@@ -92,6 +92,10 @@ export const userAppIdApi = {
     })
     return data
   },
+    search: async (user_id:string, betId: string) => {
+        const {data} =  await api.get<BetId>("mobcash/search-user",{params:{userid:user_id,app_id:betId}})
+        return data
+    },
 
   update: async (id: number, user_app_id: string, app: string) => {
     const { data } = await api.patch<UserAppId>(`/mobcash/user-app-id/${id}/`, {

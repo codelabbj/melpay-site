@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -10,6 +11,13 @@ import { Loader2, Plus, Edit, Trash2 } from "lucide-react"
 import { phoneApi } from "@/lib/api-client"
 import type { UserPhone, Network } from "@/lib/types"
 import { toast } from "react-hot-toast"
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription, AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 interface PhoneStepProps {
   selectedNetwork: Network | null
@@ -26,6 +34,9 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
   const [editingPhone, setEditingPhone] = useState<UserPhone | null>(null)
   const [newPhone, setNewPhone] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
+    const [deletePhone, setDeletePhone] = useState<UserPhone | null>(null)
 
   useEffect(() => {
     if (selectedNetwork) {
@@ -90,19 +101,27 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
     }
   }
 
-  const handleDeletePhone = async (phone: UserPhone) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer ce numéro de téléphone ?")) return
+  const handleDeleteClick = (phone:UserPhone)=>{
+      setDeletePhone(phone)
+      setIsDeleteDialogOpen(true)
+  }
+
+  const handleDeletePhone = async () => {
+    if (!deletePhone) return
     
     try {
-      await phoneApi.delete(phone.id)
-      setPhones(prev => prev.filter(p => p.id !== phone.id))
-      if (selectedPhone?.id === phone.id) {
+        setIsDeleting(true)
+      await phoneApi.delete(deletePhone.id)
+        setIsDeleting(false)
+      setPhones(prev => prev.filter(p => p.id !== deletePhone.id))
+      if (selectedPhone?.id === deletePhone.id) {
         onSelect(null as any)
       }
       toast.success("Numéro de téléphone supprimé avec succès")
     } catch (error) {
       toast.error("Erreur lors de la suppression du numéro de téléphone")
     }
+    setIsDeleteDialogOpen(false)
   }
 
   const openEditDialog = (phone: UserPhone) => {
@@ -126,36 +145,44 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
       <Card>
         <CardHeader>
           <CardTitle>Choisir un numéro de téléphone</CardTitle>
+          <CardDescription>
+            Sélectionnez ou ajoutez un numéro {selectedNetwork.public_name}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin" />
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {phones.map((phone) => (
                 <Card
                   key={phone.id}
-                  className={`cursor-pointer transition-all hover:shadow-lg ${
+                  className={`group cursor-pointer transition-all duration-200 hover:shadow-md ${
                     selectedPhone?.id === phone.id
-                      ? "ring-2 ring-primary bg-primary/10"
-                      : "hover:bg-muted/50"
+                      ? "ring-2 ring-primary bg-primary/5 shadow-md"
+                      : "hover:bg-muted/50 hover:border-primary/50"
                   }`}
                   onClick={() => onSelect(phone)}
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">{phone.phone}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Ajouté le {new Date(phone.created_at).toLocaleDateString("fr-FR")}
-                        </p>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">
+                          {phone.phone}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            Ajouté le {new Date(phone.created_at).toLocaleDateString("fr-FR")}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1 shrink-0">
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
                           onClick={(e) => {
                             e.stopPropagation()
                             openEditDialog(phone)
@@ -166,9 +193,10 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="h-9 w-9 p-0 hover:bg-destructive/10 hover:text-destructive transition-colors"
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleDeletePhone(phone)
+                            handleDeleteClick(phone)
                           }}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -178,22 +206,28 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
                   </CardContent>
                 </Card>
               ))}
-              
+
               {phones.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-4">Aucun numéro de téléphone trouvé</p>
-                  <Button onClick={() => setIsAddDialogOpen(true)}>
+                <div className="text-center py-12">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <Plus className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-muted-foreground font-medium mb-2">Aucun numéro de téléphone trouvé</p>
+                  <p className="text-sm text-muted-foreground/70 mb-6">
+                    Ajoutez votre premier numéro {selectedNetwork.public_name} pour continuer
+                  </p>
+                  <Button onClick={() => setIsAddDialogOpen(true)} size="lg">
                     <Plus className="mr-2 h-4 w-4" />
                     Ajouter un numéro
                   </Button>
                 </div>
               )}
-              
+
               {phones.length > 0 && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setIsAddDialogOpen(true)}
-                  className="w-full"
+                  className="w-full hover:bg-primary/5 hover:text-primary hover:border-primary/50 transition-colors"
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Ajouter un autre numéro
@@ -279,6 +313,33 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+        {/*Delete Bet ID Dialog*/}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Supprimer le numéro de téléphone</AlertDialogTitle>
+                    <AlertDialogDescription>Vous êtes sur le point de supprimer le numéro de téléphone {deletePhone?.phone?? "N/A"}.
+                        Cette action est irréversible, êtes vous sûr de vouloir continuer ?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                        Annuler
+                    </Button>
+                    <Button onClick={handleDeletePhone} disabled={!deletePhone || isDeleting} className="bg-destructive hover:bg-destructive/90 text-white" >
+                        {isDeleting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Suppression...
+                            </>
+                        ) : (
+                            "Supprimer"
+                        )}
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </>
   )
 }

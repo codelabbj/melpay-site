@@ -84,7 +84,7 @@ export interface UserAppId {
   user_app_id: string
   user: string | null
   telegram_user: number
-  app: string
+  app_name: string
 }
 
 export interface Transaction {
@@ -149,4 +149,10 @@ export interface Bonus {
   reason_bonus: string
   transaction: number | null
   user: string
+}
+
+export interface BetId {
+    UserId: string
+    Name: string
+    CurrencyId: string
 }

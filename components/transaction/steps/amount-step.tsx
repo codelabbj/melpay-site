@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
+import { AlertCircle, ArrowDownToLine, ArrowUpFromLine } from "lucide-react"
 import type { Platform, UserAppId, Network, UserPhone } from "@/lib/types"
 
 interface AmountStepProps {
@@ -93,40 +94,47 @@ export function AmountStep({
   const maxAmount = type === "deposit" ? selectedPlatform.max_deposit : selectedPlatform.max_win
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Transaction Summary */}
       <Card>
         <CardHeader>
           <CardTitle>Résumé de la transaction</CardTitle>
+          <CardDescription>
+            Vérifiez les informations de votre {type === "deposit" ? "dépôt" : "retrait"}
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Type</span>
-            <Badge variant={type === "deposit" ? "default" : "secondary"}>
-              {type === "deposit" ? "Dépôt" : "Retrait"}
-            </Badge>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2 flex justify-between items-center p-3 bg-primary/5 rounded-lg border border-primary/20">
+              <span className="text-sm font-medium text-muted-foreground">Type de transaction</span>
+              <Badge variant={type === "deposit" ? "default" : "secondary"} className="text-xs">
+                {type === "deposit" ? "Dépôt" : "Retrait"}
+              </Badge>
+            </div>
           </div>
-          
+
           <Separator />
-          
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Plateforme</span>
-            <span className="font-medium">{selectedPlatform.name}</span>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">ID de pari</span>
-            <span className="font-medium">{selectedBetId.user_app_id}</span>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Réseau</span>
-            <span className="font-medium">{selectedNetwork.public_name}</span>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Numéro de téléphone</span>
-            <span className="font-medium">{selectedPhone.phone}</span>
+
+          <div className="space-y-2.5">
+            <div className="flex justify-between items-center py-2">
+              <span className="text-sm text-muted-foreground">Plateforme</span>
+              <span className="font-semibold text-sm">{selectedPlatform.name}</span>
+            </div>
+
+            <div className="flex justify-between items-center py-2">
+              <span className="text-sm text-muted-foreground">ID de pari</span>
+              <span className="font-semibold text-sm truncate max-w-[200px]">{selectedBetId.user_app_id}</span>
+            </div>
+
+            <div className="flex justify-between items-center py-2">
+              <span className="text-sm text-muted-foreground">Réseau</span>
+              <span className="font-semibold text-sm">{selectedNetwork.public_name}</span>
+            </div>
+
+            <div className="flex justify-between items-center py-2">
+              <span className="text-sm text-muted-foreground">Numéro</span>
+              <span className="font-semibold text-sm">{selectedPhone.phone}</span>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -135,36 +143,69 @@ export function AmountStep({
       <Card>
         <CardHeader>
           <CardTitle>Montant de la transaction</CardTitle>
+          <CardDescription>
+            Entrez un montant entre {minAmount.toLocaleString()} et {maxAmount.toLocaleString()} FCFA
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="amount">Montant (FCFA)</Label>
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-sm font-medium">Montant (FCFA)</Label>
               <Input
                 id="amount"
                 type="number"
                 value={amount || ""}
                 onChange={(e) => handleAmountChange(e.target.value)}
-                placeholder="Entrez le montant"
-                className={errors.amount ? "border-red-500" : ""}
+                placeholder="0"
+                className={`text-lg h-12 ${errors.amount ? "border-destructive focus-visible:ring-destructive" : ""}`}
               />
               {errors.amount && (
-                <p className="text-sm text-red-500 mt-1">{errors.amount}</p>
+                <p className="text-sm text-destructive flex items-center gap-1.5 mt-1.5">
+                  <AlertCircle className="h-4 w-4" /> {errors.amount}
+                </p>
               )}
             </div>
-            
-            {amount > 0 && (
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground">Montant saisi:</p>
-                <p className="text-lg font-semibold">
-                  {amount.toLocaleString("fr-FR", {
-                    style: "currency",
-                    currency: "XOF",
-                    minimumFractionDigits: 0,
-                  })}
-                </p>
+
+            {amount > 0 && !errors.amount && (
+              <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Montant à {type === "deposit" ? "déposer" : "retirer"}</p>
+                    <p className="text-2xl font-bold text-primary">
+                      {amount.toLocaleString("fr-FR", {
+                        style: "currency",
+                        currency: "XOF",
+                        minimumFractionDigits: 0,
+                      })}
+                    </p>
+                  </div>
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    {type === "deposit" ? (
+                      <ArrowDownToLine className="h-6 w-6 text-primary" />
+                    ) : (
+                      <ArrowUpFromLine className="h-6 w-6 text-primary" />
+                    )}
+                  </div>
+                </div>
               </div>
             )}
+
+            {/* Amount limits info */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium">Min:</span>
+                <Badge variant="outline" className="text-xs">
+                  {minAmount.toLocaleString()} FCFA
+                </Badge>
+              </div>
+              <Separator orientation="vertical" className="h-4" />
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium">Max:</span>
+                <Badge variant="outline" className="text-xs">
+                  {maxAmount.toLocaleString()} FCFA
+                </Badge>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -174,20 +215,25 @@ export function AmountStep({
         <Card>
           <CardHeader>
             <CardTitle>Code de retrait</CardTitle>
+            <CardDescription>
+              Entrez le code de retrait fourni par {selectedPlatform.name}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div>
-              <Label htmlFor="withdriwalCode">Code de retrait</Label>
+            <div className="space-y-2">
+              <Label htmlFor="withdriwalCode" className="text-sm font-medium">Code de retrait</Label>
               <Input
                 id="withdriwalCode"
                 type="text"
                 value={withdriwalCode}
                 onChange={(e) => handleWithdriwalCodeChange(e.target.value)}
-                placeholder="Entrez votre code de retrait"
-                className={errors.withdriwalCode ? "border-red-500" : ""}
+                placeholder="Entrez le code"
+                className={`text-base h-12 ${errors.withdriwalCode ? "border-destructive focus-visible:ring-destructive" : ""}`}
               />
               {errors.withdriwalCode && (
-                <p className="text-sm text-red-500 mt-1">{errors.withdriwalCode}</p>
+                <p className="text-sm text-destructive flex items-center gap-1.5 mt-1.5">
+                  <AlertCircle className="h-4 w-4" /> {errors.withdriwalCode}
+                </p>
               )}
             </div>
           </CardContent>
@@ -195,11 +241,12 @@ export function AmountStep({
       )}
 
       {/* Continue Button */}
-      <div className="flex justify-end">
-        <Button 
-          onClick={onNext} 
+      <div className="flex justify-end pt-2">
+        <Button
+          onClick={onNext}
           disabled={!isFormValid()}
-          className="min-w-[120px]"
+          size="lg"
+          className="min-w-[140px]"
         >
           Continuer
         </Button>

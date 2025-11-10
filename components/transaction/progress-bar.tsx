@@ -1,6 +1,5 @@
 "use client"
 
-import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
 interface ProgressBarProps {
@@ -13,23 +12,40 @@ interface ProgressBarProps {
 export function TransactionProgressBar({ currentStep, totalSteps, type, className }: ProgressBarProps) {
   const progress = (currentStep / totalSteps) * 100
 
-  // Use mature colors for deposits and withdrawals
-  const progressColor = type === "deposit" ? "bg-deposit" : type === "withdrawal" ? "bg-withdrawal" : "bg-primary"
+  // Define gradient colors for each type - variations of the same color
+  const getGradientStyle = () => {
+    if (type === "deposit") {
+      // Green gradient for deposits (variations of #059669)
+      return {
+        background: 'linear-gradient(to right, #059669, #047857)'
+      }
+    } else if (type === "withdrawal") {
+      // Blue gradient (variations of the same hue)
+      return {
+        background: 'linear-gradient(to right, hsl(221.2 83.2% 53.3%), hsl(221.2 83.2% 43.3%))'
+      }
+    }
+    // Default gradient
+    return {
+      background: 'linear-gradient(to right, #059669, #047857)'
+    }
+  }
 
   return (
     <div className={cn("w-full space-y-2", className)}>
       <div className="flex justify-between text-sm text-muted-foreground">
-        <span>Étape {currentStep} sur {totalSteps}</span>
-        <span>{Math.round(progress)}%</span>
+        <span className="font-medium">Étape {currentStep} sur {totalSteps}</span>
+        <span className="font-semibold">{Math.round(progress)}%</span>
       </div>
-      <Progress 
-        value={progress} 
-        className="h-2"
-        // Apply custom color via style since Tailwind doesn't support dynamic classes
-        style={{
-          '--progress-background': type === "deposit" ? 'var(--color-deposit)' : type === "withdrawal" ? 'var(--color-withdrawal)' : undefined
-        } as React.CSSProperties}
-      />
+      <div className="relative w-full h-2 bg-secondary/60 rounded-full overflow-hidden">
+        <div
+          className="h-full transition-all duration-500 ease-out rounded-full"
+          style={{
+            width: `${progress}%`,
+            ...getGradientStyle()
+          }}
+        />
+      </div>
     </div>
   )
 }

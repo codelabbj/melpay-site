@@ -53,10 +53,10 @@ export default function DashboardPage() {
   }
 
   const getStatusBadge = (status: Transaction["status"]) => {
-    const statusConfig: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
-      pending: { variant: "secondary", label: "En attente" },
+    const statusConfig: Record<string, { variant:"pending" |"default" | "secondary" | "destructive" | "outline"; label: string }> = {
+      pending: { variant: "pending", label: "En attente" },
       accept: { variant: "default", label: "Accepté" },
-      init_payment: { variant: "secondary", label: "En attente" },
+      init_payment: { variant: "pending", label: "En attente" },
       error: { variant: "destructive", label: "Erreur" },
       reject: { variant: "destructive", label: "Rejeté" },
       timeout: { variant: "outline", label: "Expiré" },
@@ -279,22 +279,22 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-left sm:text-right shrink-0 w-full sm:w-auto border-t sm:border-t-0 border-border/50 pt-3 sm:pt-0 flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
-                      <p className={`text-lg sm:text-xl font-bold ${
-                        transaction.type_trans === "deposit" ? "text-deposit" : "text-withdrawal"
-                      }`}>
-                        {transaction.type_trans === "deposit" ? "+" : "-"}
-                        {transaction.amount.toLocaleString("fr-FR", {
-                          style: "currency",
-                          currency: "XOF",
-                          minimumFractionDigits: 0,
-                        })}
-                      </p>
+                    <div className="p-3 text-left sm:text-right shrink-0 w-full sm:w-auto border-t sm:border-t-0 border-border/50 pt-3 sm:pt-0 flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(transaction.created_at), "dd MMM à HH:mm", {
                           locale: fr,
                         })}
                       </p>
+                        <p className={`text-lg sm:text-xl font-bold ${
+                            transaction.type_trans === "deposit" ? "text-deposit" : "text-withdrawal"
+                        }`}>
+                            {transaction.type_trans === "deposit" ? "+" : "-"}
+                            {transaction.amount.toLocaleString("fr-FR", {
+                                style: "currency",
+                                currency: "XOF",
+                                minimumFractionDigits: 0,
+                            })}
+                        </p>
                     </div>
                   </div>
                 </CardContent>

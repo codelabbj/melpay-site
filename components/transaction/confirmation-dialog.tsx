@@ -67,84 +67,104 @@ export function ConfirmationDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
+          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mx-auto mb-2">
+            <CheckCircle className="h-7 w-7 text-primary" />
+          </div>
+          <DialogTitle className="text-center text-xl">
             Confirmer {type === "deposit" ? "le dépôt" : "le retrait"}
           </DialogTitle>
-          <DialogDescription>
-            Vérifiez les détails de votre transaction avant de confirmer
+          <DialogDescription className="text-center">
+            Vérifiez attentivement les détails de votre transaction avant de confirmer
           </DialogDescription>
         </DialogHeader>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">
-              Détails de la transaction
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Type</span>
-              <Badge variant={type === "deposit" ? "default" : "secondary"}>
-                {type === "deposit" ? "Dépôt" : "Retrait"}
-              </Badge>
-            </div>
-            
-            <Separator />
-            
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Montant</span>
-              <span className="font-semibold">
+        <div className="space-y-4">
+          {/* Amount Highlight */}
+          <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20">
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground mb-1">Montant de la transaction</p>
+              <p className="text-3xl font-bold text-primary">
                 {transactionData.amount.toLocaleString("fr-FR", {
                   style: "currency",
                   currency: "XOF",
                   minimumFractionDigits: 0,
                 })}
-              </span>
+              </p>
             </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Plateforme</span>
-              <span className="font-medium">{platformName}</span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">ID de pari</span>
-              <span className="font-medium">{transactionData.user_app_id}</span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Réseau</span>
-              <span className="font-medium">{networkName}</span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Numéro de téléphone</span>
-              <span className="font-medium">{transactionData.phone_number}</span>
-            </div>
-            
-            {type === "withdrawal" && transactionData.withdriwal_code && (
-              <>
-                <Separator />
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Code de retrait</span>
-                  <span className="font-medium">{transactionData.withdriwal_code}</span>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+          </div>
 
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+          {/* Transaction Details Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                Détails de la transaction
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center p-2.5 bg-primary/5 rounded-lg border border-primary/20">
+                <span className="text-sm font-medium text-muted-foreground">Type</span>
+                <Badge variant={type === "deposit" ? "default" : "secondary"} className="text-xs">
+                  {type === "deposit" ? "Dépôt" : "Retrait"}
+                </Badge>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2.5">
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-sm text-muted-foreground">Plateforme</span>
+                  <span className="font-semibold text-sm">{platformName}</span>
+                </div>
+
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-sm text-muted-foreground">ID de pari</span>
+                  <span className="font-semibold text-sm truncate max-w-[200px]">
+                    {transactionData.user_app_id}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-sm text-muted-foreground">Réseau</span>
+                  <span className="font-semibold text-sm">{networkName}</span>
+                </div>
+
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-sm text-muted-foreground">Numéro</span>
+                  <span className="font-semibold text-sm">{transactionData.phone_number}</span>
+                </div>
+
+                {type === "withdrawal" && transactionData.withdriwal_code && (
+                  <>
+                    <Separator className="my-2" />
+                    <div className="flex justify-between items-center py-1.5 bg-muted/50 rounded-md px-3 -mx-2">
+                      <span className="text-sm text-muted-foreground font-medium">Code de retrait</span>
+                      <Badge variant="outline" className="font-mono text-xs">
+                        {transactionData.withdriwal_code}
+                      </Badge>
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <DialogFooter className="gap-2 sm:gap-2 mt-2">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="flex-1 sm:flex-1"
+          >
             Annuler
           </Button>
-          <Button 
-            onClick={handleConfirm} 
+          <Button
+            onClick={handleConfirm}
             disabled={isSubmitting || isLoading}
-            className="min-w-[100px]"
+            className="flex-1 sm:flex-1"
+            size="default"
           >
             {isSubmitting ? (
               <>
