@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -171,7 +171,7 @@ export default function TransactionHistoryPage() {
                     className="pl-10 border-2"
                   />
                 </div>
-                  <div className="flex items-center w-full gap-3 block sm:hidden">
+                  <div className=" items-center w-full gap-3 block sm:hidden">
                       <Select value={typeFilter} onValueChange={(value) => handleFilterChange("type", value)}>
                           <SelectTrigger className=" w-full border-2">
                               <SelectValue placeholder="Type" />
