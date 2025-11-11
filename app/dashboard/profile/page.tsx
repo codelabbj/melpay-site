@@ -116,7 +116,7 @@ export default function ProfilePage() {
         phone: formData.phone
       }
 
-      const profile = await profileApi.update(updateData)
+      await profileApi.update(updateData)
 
       // Update local user data with the response from the API
       updateUser({...user,last_name:formData.last_name,email:formData.email,first_name:formData.first_name,phone:formData.phone})
