@@ -154,5 +154,40 @@ export interface Bonus {
 export interface BetId {
     UserId: string
     Name: string
-    CurrencyId: string
+    CurrencyId: number
+}
+
+export interface Coupon {
+    id: number
+    code:string
+    bet_app: string
+    bet_app_details: Network
+    created_at: string
+}
+
+export interface UserProfile {
+    id: string
+    bonus_available: number
+    is_superuser: boolean
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+    is_delete: boolean
+    phone: string
+    otp: string | null
+    otp_created_at: string | null
+    is_block: boolean
+    referrer_code: string | null
+    referral_code: string
+    is_active: boolean
+    is_staff: boolean
+    is_supperuser: boolean
+    date_joined: string
+    last_login: string
+}
+
+export interface Setting {
+    referral_bonus: boolean
+    [key: string]: any
 }

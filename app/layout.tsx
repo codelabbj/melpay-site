@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context"
+import { SettingsProvider } from "@/lib/settings-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "react-hot-toast"
 
@@ -29,10 +30,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            {children}
-            <Toaster position="top-right" />
-          </AuthProvider>
+          <SettingsProvider>
+            <AuthProvider>
+              {children}
+              <Toaster position="top-right" />
+            </AuthProvider>
+          </SettingsProvider>
         </ThemeProvider>
       </body>
     </html>

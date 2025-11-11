@@ -8,7 +8,7 @@ import type {
     Transaction,
     PaginatedResponse,
     Notification,
-    Bonus, BetId,
+    Bonus, BetId, Coupon, UserProfile,
 } from "./types"
 
 export const authApi = {
@@ -93,7 +93,7 @@ export const userAppIdApi = {
     return data
   },
     search: async (user_id:string, betId: string) => {
-        const {data} =  await api.get<BetId>("mobcash/search-user",{params:{userid:user_id,app_id:betId}})
+        const {data} =  await api.post<BetId>("mobcash/search-user",{userid:user_id,app_id:betId})
         return data
     },
 
@@ -175,6 +175,13 @@ export const bonusApi = {
   },
 }
 
+export const couponApi = {
+    getAll: async (page = 1) => {
+        const {data} = await api.get<PaginatedResponse<Coupon>>(`/mobcash/coupon?page=${page}`)
+        return data
+    }
+}
+
 export const fcmApi = {
   registerToken: async (token: string, platform: string = 'web', userId?: string | number) => {
     const { data } = await api.post('/mobcash/fcm-token/', {
@@ -188,4 +195,35 @@ export const fcmApi = {
   deleteToken: async (token: string) => {
     await api.delete(`/mobcash/fcm-token/${token}/`)
   },
+}
+
+export const adsApi = {
+    getAll: async () => {
+        const {data} = await api.get<PaginatedResponse<string>>("/mobcash/ann")
+        return data
+    }
+}
+
+export const settingApi = {
+    getSetting: async ()=> {
+        const {data} = await api.get("/mobcash/setting")
+        return data
+    }
+}
+
+export const profileApi = {
+    update: async (user: UserProfile) => {
+        const {data} = await api.patch(`/auth/me`, user)
+        return data
+    },
+
+    changePassword: async (new_password:string,confirm_new_password:string,old_password:string) => {
+        const query = {
+            new_password:new_password,
+            confirm_new_password:confirm_new_password,
+            old_password:old_password,
+        }
+        const {data} = await api.post(`/auth/change-password`, query)
+        return data
+    }
 }

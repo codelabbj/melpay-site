@@ -10,6 +10,7 @@ interface AuthContextType {
   isLoading: boolean
   isHydrated: boolean
   login: (accessToken: string, refreshToken: string, userData: User) => void
+    updateUser: (user: User) => void
   logout: () => void
 }
 
@@ -54,13 +55,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log("User set to:", userData)
   }
 
+  const updateUser = (userData: User) => {
+      setUser(userData)
+      localStorage.setItem("user_data", JSON.stringify(userData))
+      console.log("Update user:", userData)
+  }
+
   const logout = () => {
     localStorage.clear()
     setUser(null)
     router.push("/login")
   }
 
-  return <AuthContext.Provider value={{ user, isLoading, isHydrated, login, logout }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, isLoading, isHydrated,updateUser, login, logout }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

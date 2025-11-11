@@ -9,14 +9,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, Edit, Save, X, Loader2, Eye, EyeOff } from "lucide-react"
 import { toast } from "react-hot-toast"
+import {UserProfile} from "@/lib/types";
+import {profileApi} from "@/lib/api-client";
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showOldPassword, setShowOldPassword] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -24,6 +27,7 @@ export default function ProfilePage() {
     last_name: user?.last_name || "",
     email: user?.email || "",
     phone: user?.phone || "",
+    old_password: "",
     password: "",
     confirm_password: "",
   })
@@ -49,6 +53,7 @@ export default function ProfilePage() {
       last_name: user.last_name,
       email: user.email,
       phone: user.phone,
+      old_password: "",
       password: "",
       confirm_password: "",
     })
@@ -61,12 +66,19 @@ export default function ProfilePage() {
       last_name: user.last_name,
       email: user.email,
       phone: user.phone,
+      old_password: "",
       password: "",
       confirm_password: "",
     })
   }
 
   const handleSave = async () => {
+    // Validate if trying to change password without providing old password
+    if (formData.password && !formData.old_password) {
+      toast.error("Veuillez fournir votre ancien mot de passe pour le modifier")
+      return
+    }
+
     // Validate passwords match if password is being changed
     if (formData.password && formData.password !== formData.confirm_password) {
       toast.error("Les mots de passe ne correspondent pas")
@@ -82,19 +94,37 @@ export default function ProfilePage() {
     setIsLoading(true)
     try {
       // Prepare update data
-      const updateData: any = {
-        first_name: formData.first_name,
+      const updateData: UserProfile = {
+          bonus_available: user.bonus_available,
+          date_joined: user.date_joined,
+          id: user.id,
+          is_active: user.is_active,
+          is_block: user.is_block,
+          is_delete: user.is_delete,
+          is_staff: user.is_staff,
+          is_superuser: user.is_superuser,
+          is_supperuser: user.is_supperuser,
+          last_login: user.last_login,
+          otp: user.otp,
+          otp_created_at: user.otp_created_at,
+          referral_code: user.referral_code,
+          referrer_code: user.referrer_code,
+          username: user.username,
+          first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
-        phone: formData.phone,
+        phone: formData.phone
       }
+
+      const profile = await profileApi.update(updateData)
+
+      // Update local user data with the response from the API
+      updateUser({...user,last_name:formData.last_name,email:formData.email,first_name:formData.first_name,phone:formData.phone})
 
       // Only include password if it's being changed
       if (formData.password) {
-        updateData.password = formData.password
+         await profileApi.changePassword(formData.password, formData.confirm_password, formData.old_password)
       }
-
-      // TODO : Api call to update the user datas
 
       toast.success("Profil mis à jour avec succès!")
       setIsEditing(false)
@@ -102,6 +132,7 @@ export default function ProfilePage() {
       // Clear password fields
       setFormData((prev) => ({
         ...prev,
+        old_password: "",
         password: "",
         confirm_password: "",
       }))
@@ -237,6 +268,35 @@ export default function ProfilePage() {
                 <div className="pt-4 border-t">
                   <h3 className="text-sm font-semibold mb-4">Changer le mot de passe (optionnel)</h3>
                   <div className="space-y-4">
+                    {/* Old Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="old_password">Ancien mot de passe</Label>
+                      <div className="relative">
+                        <Input
+                          id="old_password"
+                          name="old_password"
+                          type={showOldPassword ? "text" : "password"}
+                          value={formData.old_password}
+                          onChange={handleInputChange}
+                          placeholder="Votre ancien mot de passe"
+                          className="rounded-xl pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                          onClick={() => setShowOldPassword(!showOldPassword)}
+                        >
+                          {showOldPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
                     {/* New Password */}
                     <div className="space-y-2">
                       <Label htmlFor="password">Nouveau mot de passe</Label>

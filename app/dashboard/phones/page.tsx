@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge"
 import { phoneApi, userAppIdApi, networkApi, platformApi } from "@/lib/api-client"
 import type {UserPhone, UserAppId, Network, Platform, BetId} from "@/lib/types"
 import { toast } from "react-hot-toast"
-import { Loader2, Phone, Plus, Trash2, Edit, Smartphone, ArrowLeft } from "lucide-react"
+import { Loader2, Phone, Plus, Trash2, Edit, Smartphone, ArrowLeft, AlertCircle } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +35,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {data} from "autoprefixer";
 
 const phoneSchema = z.object({
   phone: z.string().min(8, "Numéro de téléphone invalide"),
@@ -63,6 +64,8 @@ export default function PhonesPage() {
   const [editingAppId, setEditingAppId] = useState<UserAppId | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ type: "phone" | "appId"; id: number } | null>(null)
     const [betId, setBetId] = useState<BetId | null>(null)
+    const [appId, setAppId] = useState<{user_app_id:string,app:string} | null>(null)
+    const [tab,setTab] = useState<string>("phones")
 
   const phoneForm = useForm<PhoneFormData>({
     resolver: zodResolver(phoneSchema),
@@ -74,7 +77,7 @@ export default function PhonesPage() {
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [tab])
 
   // Refetch data when the page gains focus to ensure fresh data
   useEffect(() => {
@@ -87,32 +90,48 @@ export default function PhonesPage() {
 
   const loadData = async () => {
     setIsLoading(true)
-    try {
-      const [phonesData, networksData, platformsData] = await Promise.all([
-        phoneApi.getAll(),
-        networkApi.getAll(),
-        platformApi.getAll(),
-      ])
-      setUserPhones(phonesData)
-      setNetworks(networksData)
-      setPlatforms(platformsData)
-
-      // Load all app IDs for all platforms
-      const allAppIds: UserAppId[] = []
-      for (const platform of platformsData) {
-        try {
-          const appIds = await userAppIdApi.getByPlatform(platform.id.toString())
-          allAppIds.push(...appIds)
-        } catch (error) {
-          console.error(`Failed to load app IDs for platform ${platform.id}:`, error)
-        }
+      let platformsData : Platform[] =[]
+      try{
+        platformsData = await platformApi.getAll()
+          setPlatforms(platformsData)
+      }catch(error){
+          console.error("Failed to load data:", error)
+      }finally {
+          if (tab =="appIds") {
+              try {
+                  // Load all app IDs for all platforms
+                  const allAppIds: UserAppId[] = []
+                  for (const platform of platforms) {
+                      try {
+                          const appIds = await userAppIdApi.getByPlatform(platform.id.toString())
+                          allAppIds.push(...appIds)
+                      } catch (error) {
+                          console.error(`Failed to load app IDs for platform ${platform.id}:`, error)
+                      }
+                  }
+                  setUserAppIds(allAppIds)
+              } catch (error) {
+                  console.error("Failed to load data:", error)
+              } finally {
+                  setIsLoading(false)
+              }
+          }else{
+              try {
+                  const [phonesData, networksData] = await Promise.all([
+                      phoneApi.getAll(),
+                      networkApi.getAll(),
+                  ])
+                  setUserPhones(phonesData)
+                  setNetworks(networksData)
+              } catch (error) {
+                  console.error("Failed to load data:", error)
+              } finally {
+                  setIsLoading(false)
+              }
+          }
       }
-      setUserAppIds(allAppIds)
-    } catch (error) {
-      console.error("Failed to load data:", error)
-    } finally {
-      setIsLoading(false)
-    }
+
+
   }
 
   const handlePhoneSubmit = async (data: PhoneFormData) => {
@@ -143,10 +162,10 @@ export default function PhonesPage() {
         await userAppIdApi.update(editingAppId.id, data.user_app_id, data.app)
         toast.success("ID de pari modifié avec succès!")
       } else {
-        await userAppIdApi.create(data.user_app_id, data.app)
-        toast.success("ID de pari ajouté avec succès!")
+        const response = await userAppIdApi.search(data.user_app_id, data.app)
+          setBetId(response)
+          setAppId({user_app_id:data.user_app_id, app:data.app})
       }
-      setIsAppIdDialogOpen(false)
       appIdForm.reset()
       setEditingAppId(null)
       loadData()
@@ -155,6 +174,23 @@ export default function PhonesPage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleAppIdConfirm = async () => {
+      if(!appId) return
+
+      setIsSubmitting(true)
+      try {
+          await userAppIdApi.create(appId.user_app_id, appId.app)
+          toast.success("ID de pari modifié avec succès!")
+          setIsAppIdDialogOpen(false)
+      }catch (error) {
+          console.error("App ID operation error:", error)
+      } finally {
+          setIsSubmitting(false)
+          setBetId(null)
+          setAppId(null)
+      }
   }
 
   const handleDelete = async () => {
@@ -201,6 +237,8 @@ export default function PhonesPage() {
 
   const closeAppIdDialog = () => {
     setIsAppIdDialogOpen(false)
+      setBetId(null)
+      setAppId(null)
     setEditingAppId(null)
     appIdForm.reset()
   }
@@ -233,7 +271,7 @@ export default function PhonesPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="phones" className="space-y-4 sm:space-y-6">
+      <Tabs defaultValue="phones" value={tab} onValueChange={value => setTab(value)} className="space-y-4 sm:space-y-6">
         <TabsList className="w-full grid grid-cols-2 h-11 sm:h-12 bg-muted/50">
           <TabsTrigger value="phones" className="text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Phone className="h-4 w-4 mr-2 hidden sm:inline" />
@@ -502,7 +540,7 @@ export default function PhonesPage() {
                               </DialogDescription>
                           </DialogHeader>
                           {betId ?
-                              betId.CurrencyId === "XOF" ?
+                              betId.CurrencyId === 27 ?
                               (
                                   <div className="space-y-4">
                                       <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4 space-y-3">
@@ -520,37 +558,32 @@ export default function PhonesPage() {
                                                   <span className="text-muted-foreground font-medium">Nom d'utilisateur:</span>
                                                   <span className="font-bold">{betId.Name}</span>
                                               </div>
-                                              <div className="flex items-center justify-between py-2">
-                                                  <span className="text-muted-foreground font-medium">Devise:</span>
-                                                  <Badge variant="default">{betId.CurrencyId}</Badge>
-                                              </div>
                                           </div>
                                       </div>
 
                                       <div className="flex gap-3">
                                           <Button
                                               type="button"
-                                              variant="default"
+                                              variant="outline"
                                               className="flex-1"
-                                              onClick={() => {
-                                                  // Handle confirm action
-                                                  toast.success("ID de pari confirmé!")
-                                                  setBetId(null)
-                                                  setIsAppIdDialogOpen(false)
-                                              }}
+                                              onClick={closeAppIdDialog}
                                           >
-                                              Confirmer
+                                              Annuler
                                           </Button>
                                           <Button
                                               type="button"
-                                              variant="outline"
+                                              variant="default"
                                               className="flex-1"
-                                              onClick={() => {
-                                                  setBetId(null)
-                                                  toast.error("Action annulée")
-                                              }}
+                                              onClick={handleAppIdConfirm}
                                           >
-                                              Annuler
+                                              {isSubmitting ? (
+                                                  <>
+                                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                      Confirmation...
+                                                  </>
+                                              ) : (
+                                                  "Confirmer"
+                                              ) }
                                           </Button>
                                       </div>
                                   </div>
@@ -559,17 +592,12 @@ export default function PhonesPage() {
                                       <div className="rounded-lg border-2 border-destructive/20 bg-destructive/5 p-4">
                                           <div className="flex items-start gap-3">
                                               <div className="p-2 rounded-full bg-destructive/10 shrink-0">
-                                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                      <circle cx="12" cy="12" r="10"></circle>
-                                                      <line x1="12" y1="8" x2="12" y2="12"></line>
-                                                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                                  </svg>
+                                                  <AlertCircle className="h-5 w-5 text-destructive" />
                                               </div>
                                               <div className="flex-1">
-                                                  <h3 className="font-bold text-base mb-1">Devise non supportée</h3>
-                                                  <p className="text-sm text-muted-foreground">
-                                                      La devise <Badge variant="outline" className="mx-1">{betId.CurrencyId}</Badge> n'est pas prise en charge.
-                                                      Seule la devise <Badge variant="default" className="mx-1">XOF</Badge> est acceptée.
+                                                  <h3 className="font-bold text-base mb-2">Compte introuvable ou devise non supportée</h3>
+                                                  <p className="text-sm text-muted-foreground leading-relaxed">
+                                                      Aucun compte n'a été trouvé avec l'ID <Badge variant="outline" className="mx-1">{appId?.user_app_id}</Badge> ou votre compte n'est pas configuré en Franc CFA (XOF - Afrique de l'Ouest). Assurez-vous que l'identifiant est correct et que votre compte est bien rattaché à la zone XOF, puis réessayez.
                                                   </p>
                                               </div>
                                           </div>
@@ -579,10 +607,7 @@ export default function PhonesPage() {
                                           type="button"
                                           variant="outline"
                                           className="w-full"
-                                          onClick={() => {
-                                              setBetId(null)
-                                              toast.error("Action annulée")
-                                          }}
+                                          onClick={closeAppIdDialog}
                                       >
                                           Annuler
                                       </Button>

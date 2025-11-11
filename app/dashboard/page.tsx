@@ -1,23 +1,33 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect} from "react"
 import { useAuth } from "@/lib/auth-context"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowDownToLine, ArrowUpFromLine, Wallet, Loader2, ArrowRight, RefreshCw, Copy, Check, Smartphone } from "lucide-react"
+import { ArrowDownToLine, ArrowUpFromLine, Wallet, Loader2, ArrowRight, RefreshCw, Copy, Check, Smartphone, Ticket } from "lucide-react"
 import Link from "next/link"
-import { transactionApi } from "@/lib/api-client"
+import {adsApi, transactionApi} from "@/lib/api-client"
 import type { Transaction } from "@/lib/types"
 import { toast } from "react-hot-toast"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import Image from "next/image"
 
 export default function DashboardPage() {
   const { user } = useAuth()
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
   const [copiedReference, setCopiedReference] = useState<string | null>(null)
+  const [ads, setAds] = useState<string[]>([])
+
 
   useEffect(() => {
     if (user) {
@@ -36,6 +46,16 @@ export default function DashboardPage() {
     return () => window.removeEventListener('focus', handleFocus)
   }, [user])
 
+    useEffect(()=>{
+        const carrouselAutoScroll = ()=>{
+            const next = document.getElementById("next")
+            if (next) next.click()
+        }
+
+        const intervalId = setInterval(carrouselAutoScroll,500)
+        return () => clearInterval(intervalId)
+    })
+
   const fetchRecentTransactions = async () => {
     try {
       setIsLoadingTransactions(true)
@@ -43,7 +63,9 @@ export default function DashboardPage() {
         page: 1,
         page_size: 5, // Get only the 5 most recent transactions
       })
-      setRecentTransactions(data.results)
+        const response = await adsApi.getAll()
+        setAds(response.results)
+        setRecentTransactions(data.results)
     } catch (error) {
       console.error("Error fetching recent transactions:", error)
       toast.error("Erreur lors du chargement des transactions récentes")
@@ -132,7 +154,7 @@ export default function DashboardPage() {
 
       {/* Quick actions */}
       <div className="space-y-4 sm:space-y-5">
-        <div className="flex gap-3 sm:gap-4 sm:grid sm:grid-cols-3 w-4/5">
+        <div className="flex gap-3 sm:gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 w-full">
           <Link href="/dashboard/deposit" className="group flex-1 sm:flex-none">
             <Card className="relative overflow-hidden border-2 border-deposit/30 bg-gradient-to-br from-deposit via-deposit/65 to-deposit/50 hover:border-deposit/50 transition-all duration-300 hover:shadow-lg hover:shadow-deposit/40 scale-75 sm:scale-100">
               <div className="absolute top-0 right-0 w-32 h-32 bg-deposit/20 rounded-full blur-3xl group-hover:bg-deposit/30 transition-all duration-500"></div>
@@ -177,8 +199,68 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </Link>
+
+          <Link href="/dashboard/coupons" className="group flex-1 sm:flex-none">
+            <Card className="relative overflow-hidden border-2 border-blue-300/40 bg-gradient-to-br from-blue-200 via-blue-300/65 to-blue-200/50 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-300/40 scale-75 sm:scale-100">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-300/20 rounded-full blur-3xl group-hover:bg-blue-300/30 transition-all duration-500"></div>
+              <CardContent className="p-1 sm:p-5 lg:p-6 relative">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between">
+                  <div className="p-3 sm:p-3 rounded-2xl bg-blue-300/70 text-blue-900 ring-1 ring-blue-400 group-hover:scale-110 transition-transform duration-300 invisible sm:visible">
+                    <Ticket className="h-6 w-6 visible" />
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-blue-400/70 group-hover:translate-x-1 group-hover:text-blue-500 transition-all duration-300 hidden sm:block" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-foreground mt-2 sm:mt-3 hidden sm:block">Coupons</h3>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </div>
+
+      {/* Ads Section */}
+      {ads.length > 0 ? (
+        <Carousel
+          className="w-full"
+          opts={{
+              loop: true,
+          }}
+        >
+          <CarouselContent>
+            {ads.map((adUrl, index) => (
+              <CarouselItem key={index}>
+                <Card className="border-2 overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="relative w-full aspect-[21/9] sm:aspect-[21/6]">
+                      <Image
+                        src={adUrl}
+                        alt={`Publicité ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        priority={index === 0}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious id="previous" className="left-2 sm:left-4" />
+          <CarouselNext id="next" className="right-2 sm:right-4" />
+        </Carousel>
+      ) : (
+        <Card className="border-2 border-dashed border-muted-foreground/20 bg-muted/10">
+          <CardContent className="flex items-center justify-center py-8 sm:py-12">
+            <div className="text-center space-y-2">
+              <p className="text-sm sm:text-base font-medium text-muted-foreground">
+                Espace publicitaire à venir
+              </p>
+              <p className="text-xs text-muted-foreground/70">
+                Les publicités arriveront bientôt ici
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent activity */}
       <div className="space-y-4 sm:space-y-5">

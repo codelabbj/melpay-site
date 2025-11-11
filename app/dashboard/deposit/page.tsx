@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, ExternalLink } from "lucide-react"
 import { TransactionProgressBar } from "@/components/transaction/progress-bar"
 import { StepNavigation } from "@/components/transaction/step-navigation"
 import { ConfirmationDialog } from "@/components/transaction/confirmation-dialog"
@@ -16,6 +16,14 @@ import { AmountStep } from "@/components/transaction/steps/amount-step"
 import { transactionApi } from "@/lib/api-client"
 import type { Platform, UserAppId, Network, UserPhone } from "@/lib/types"
 import { toast } from "react-hot-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 export default function DepositPage() {
   const router = useRouter()
@@ -35,6 +43,10 @@ export default function DepositPage() {
   // Confirmation dialog
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Transaction link dialog
+  const [isTransactionLinkDialogOpen, setIsTransactionLinkDialogOpen] = useState(false)
+  const [transactionLink, setTransactionLink] = useState<string>("")
 
   // Redirect if not authenticated
   if (!user) {
@@ -64,7 +76,7 @@ export default function DepositPage() {
 
     setIsSubmitting(true)
     try {
-      await transactionApi.createDeposit({
+      const response = await transactionApi.createDeposit({
         amount,
         phone_number: selectedPhone.phone,
         app: selectedPlatform.id,
@@ -72,14 +84,36 @@ export default function DepositPage() {
         network: selectedNetwork.id,
         source: "web"
       })
-      
-      toast.success("Dépôt initié avec succès!")
-      router.push("/dashboard")
+
+      if (response.transaction_link) {
+        // Close confirmation dialog and show transaction link dialog
+        setIsConfirmationOpen(false)
+        setTransactionLink(response.transaction_link)
+        setIsTransactionLinkDialogOpen(true)
+      } else {
+        toast.success("Dépôt initié avec succès!")
+        router.push("/dashboard")
+      }
     } catch (error) {
       toast.error("Erreur lors de la création du dépôt")
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleConfirmRedirect = () => {
+    if (transactionLink) {
+      window.open(transactionLink, '_blank')
+      setIsTransactionLinkDialogOpen(false)
+      toast.success("Dépôt initié avec succès!")
+      router.push("/dashboard")
+    }
+  }
+
+  const handleCancelRedirect = () => {
+    setIsTransactionLinkDialogOpen(false)
+    toast.success("Dépôt initié avec succès!")
+    router.push("/dashboard")
   }
 
   const isStepValid = () => {
@@ -215,6 +249,51 @@ export default function DepositPage() {
           networkName={selectedNetwork?.public_name || ""}
           isLoading={isSubmitting}
         />
+
+        {/* Transaction Link Dialog */}
+        <Dialog open={isTransactionLinkDialogOpen} onOpenChange={setIsTransactionLinkDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <ExternalLink className="h-5 w-5 text-primary" />
+                Finaliser le dépôt
+              </DialogTitle>
+              <DialogDescription className="text-base pt-2">
+                Pour compléter votre dépôt, vous devez confirmer la transaction sur la plateforme dédié.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-4">
+              <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Lien de transaction:
+                </p>
+                <p className="text-sm font-mono break-all text-primary">
+                  {transactionLink}
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelRedirect}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                onClick={handleConfirmRedirect}
+                className="w-full sm:w-auto order-1 sm:order-2 gap-2"
+              >
+                Ouvrir le lien
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )
