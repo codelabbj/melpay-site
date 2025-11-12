@@ -213,7 +213,7 @@ export const settingApi = {
 
 export const profileApi = {
     update: async (user: UserProfile) => {
-        const {data} = await api.patch(`/auth/me`, user)
+        const {data} = await api.patch(`/auth/edit`, user)
         return data
     },
 
@@ -223,7 +223,7 @@ export const profileApi = {
             confirm_new_password:confirm_new_password,
             old_password:old_password,
         }
-        const {data} = await api.post(`/auth/change-password`, query)
+        const {data} = await api.post(`/auth/change_password`, query)
         return data
     }
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React, {useEffect, useRef} from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
@@ -14,14 +14,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, User, Loader2, Bell } from "lucide-react"
+import { LogOut, User, Loader2, Bell, Gift } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import Image from "next/image";
 import logo from "@/public/logo.png"
+import {useSettings} from "@/lib/settings-context";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const { user, isLoading, logout } = useAuth()
+    const {settings} = useSettings()
+
+    const referralBonusEnabled = settings?.referral_bonus || false
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -93,6 +97,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full animate-pulse"></span>
                 </Link>
               </Button>
+
+              {/* Bonus button */}
+                {
+                    referralBonusEnabled && (
+                        <Button
+                            asChild
+                            className="relative overflow-hidden rounded-xl px-3 sm:px-4 h-10 font-semibold text-white border-0 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                            style={{
+                                background: 'linear-gradient(135deg, hsl(220, 90%, 56%) 20%, hsl(280, 85%, 60%) 100%)',
+                            }}
+                        >
+                            <Link href="/dashboard/bonus" className="flex items-center gap-2">
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
+                                <Gift className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <span className="hidden sm:inline text-sm">Bonus</span>
+                            </Link>
+                        </Button>
+                    )
+                }
 
               {/* Theme toggle for mobile */}
               <div className="sm:hidden">

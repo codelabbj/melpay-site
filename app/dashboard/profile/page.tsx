@@ -2,6 +2,9 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,6 +15,54 @@ import { toast } from "react-hot-toast"
 import {UserProfile} from "@/lib/types";
 import {profileApi} from "@/lib/api-client";
 
+const profileSchema = z.object({
+  first_name: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
+  last_name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  email: z.string().email("Email invalide"),
+  phone: z.string().min(8, "Numéro de téléphone invalide"),
+  old_password: z.string().optional(),
+  password: z.string().optional(),
+  confirm_password: z.string().optional(),
+}).refine(
+  (data) => {
+    // If password is provided, old_password must be provided
+    if (data.password && data.password.length > 0) {
+      return data.old_password && data.old_password.length > 0
+    }
+    return true
+  },
+  {
+    message: "Veuillez fournir votre ancien mot de passe pour le modifier",
+    path: ["old_password"],
+  }
+).refine(
+  (data) => {
+    // If password is provided, it must be at least 6 characters
+    if (data.password && data.password.length > 0) {
+      return data.password.length >= 6
+    }
+    return true
+  },
+  {
+    message: "Le mot de passe doit contenir au moins 6 caractères",
+    path: ["password"],
+  }
+).refine(
+  (data) => {
+    // If password is provided, confirm_password must match
+    if (data.password && data.password.length > 0) {
+      return data.password === data.confirm_password
+    }
+    return true
+  },
+  {
+    message: "Les mots de passe ne correspondent pas",
+    path: ["confirm_password"],
+  }
+)
+
+type ProfileFormData = z.infer<typeof profileSchema>
+
 export default function ProfilePage() {
   const router = useRouter()
   const { user, updateUser } = useAuth()
@@ -21,15 +72,22 @@ export default function ProfilePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showOldPassword, setShowOldPassword] = useState(false)
 
-  // Form state
-  const [formData, setFormData] = useState({
-    first_name: user?.first_name || "",
-    last_name: user?.last_name || "",
-    email: user?.email || "",
-    phone: user?.phone || "",
-    old_password: "",
-    password: "",
-    confirm_password: "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      first_name: user?.first_name || "",
+      last_name: user?.last_name || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      old_password: "",
+      password: "",
+      confirm_password: "",
+    },
   })
 
   // Redirect if not authenticated
@@ -38,17 +96,9 @@ export default function ProfilePage() {
     return null
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
   const handleEdit = () => {
     setIsEditing(true)
-    setFormData({
+    reset({
       first_name: user.first_name,
       last_name: user.last_name,
       email: user.email,
@@ -61,7 +111,7 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setIsEditing(false)
-    setFormData({
+    reset({
       first_name: user.first_name,
       last_name: user.last_name,
       email: user.email,
@@ -72,25 +122,7 @@ export default function ProfilePage() {
     })
   }
 
-  const handleSave = async () => {
-    // Validate if trying to change password without providing old password
-    if (formData.password && !formData.old_password) {
-      toast.error("Veuillez fournir votre ancien mot de passe pour le modifier")
-      return
-    }
-
-    // Validate passwords match if password is being changed
-    if (formData.password && formData.password !== formData.confirm_password) {
-      toast.error("Les mots de passe ne correspondent pas")
-      return
-    }
-
-    // Validate password length if provided
-    if (formData.password && formData.password.length < 8) {
-      toast.error("Le mot de passe doit contenir au moins 8 caractères")
-      return
-    }
-
+  const onSubmit = async (data: ProfileFormData) => {
     setIsLoading(true)
     try {
       // Prepare update data
@@ -110,35 +142,38 @@ export default function ProfilePage() {
           referral_code: user.referral_code,
           referrer_code: user.referrer_code,
           username: user.username,
-          first_name: formData.first_name,
-        last_name: formData.last_name,
-        email: formData.email,
-        phone: formData.phone
+          first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        phone: data.phone
       }
 
       await profileApi.update(updateData)
 
       // Update local user data with the response from the API
-      updateUser({...user,last_name:formData.last_name,email:formData.email,first_name:formData.first_name,phone:formData.phone})
+      updateUser({...user,last_name:data.last_name,email:data.email,first_name:data.first_name,phone:data.phone})
 
       // Only include password if it's being changed
-      if (formData.password) {
-         await profileApi.changePassword(formData.password, formData.confirm_password, formData.old_password)
+      if (data.password && data.password.length > 0) {
+         await profileApi.changePassword(data.password, data.confirm_password!, data.old_password!)
       }
 
       toast.success("Profil mis à jour avec succès!")
       setIsEditing(false)
 
       // Clear password fields
-      setFormData((prev) => ({
-        ...prev,
+      reset({
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        phone: data.phone,
         old_password: "",
         password: "",
         confirm_password: "",
-      }))
+      })
     } catch (error) {
       console.error("Error updating profile:", error)
-      toast.error("Erreur lors de la mise à jour du profil")
+      // Error is handled by api interceptor
     } finally {
       setIsLoading(false)
     }
@@ -182,214 +217,231 @@ export default function ProfilePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              {/* First Name */}
-              <div className="space-y-2">
-                <Label htmlFor="first_name">Prénom</Label>
-                {isEditing ? (
-                  <Input
-                    id="first_name"
-                    name="first_name"
-                    value={formData.first_name}
-                    onChange={handleInputChange}
-                    placeholder="Votre prénom"
-                    className="rounded-xl"
-                  />
-                ) : (
-                  <div className="p-3 rounded-xl bg-muted/50 text-sm font-medium">
-                    {user.first_name || "Non renseigné"}
-                  </div>
-                )}
-              </div>
-
-              {/* Last Name */}
-              <div className="space-y-2">
-                <Label htmlFor="last_name">Nom</Label>
-                {isEditing ? (
-                  <Input
-                    id="last_name"
-                    name="last_name"
-                    value={formData.last_name}
-                    onChange={handleInputChange}
-                    placeholder="Votre nom"
-                    className="rounded-xl"
-                  />
-                ) : (
-                  <div className="p-3 rounded-xl bg-muted/50 text-sm font-medium">
-                    {user.last_name || "Non renseigné"}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              {isEditing ? (
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="votre@email.com"
-                  className="rounded-xl"
-                />
-              ) : (
-                <div className="p-3 rounded-xl bg-muted/50 text-sm font-medium">
-                  {user.email || "Non renseigné"}
-                </div>
-              )}
-            </div>
-
-            {/* Phone */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">Téléphone</Label>
-              {isEditing ? (
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Votre numéro de téléphone"
-                  className="rounded-xl"
-                />
-              ) : (
-                <div className="p-3 rounded-xl bg-muted/50 text-sm font-medium">
-                  {user.phone || "Non renseigné"}
-                </div>
-              )}
-            </div>
-
-            {/* Password fields - only show when editing */}
-            {isEditing && (
-              <>
-                <div className="pt-4 border-t">
-                  <h3 className="text-sm font-semibold mb-4">Changer le mot de passe (optionnel)</h3>
-                  <div className="space-y-4">
-                    {/* Old Password */}
-                    <div className="space-y-2">
-                      <Label htmlFor="old_password">Ancien mot de passe</Label>
-                      <div className="relative">
-                        <Input
-                          id="old_password"
-                          name="old_password"
-                          type={showOldPassword ? "text" : "password"}
-                          value={formData.old_password}
-                          onChange={handleInputChange}
-                          placeholder="Votre ancien mot de passe"
-                          className="rounded-xl pr-10"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                          onClick={() => setShowOldPassword(!showOldPassword)}
-                        >
-                          {showOldPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* New Password */}
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Nouveau mot de passe</Label>
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          name="password"
-                          type={showPassword ? "text" : "password"}
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          placeholder="Minimum 8 caractères"
-                          className="rounded-xl pr-10"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Confirm Password */}
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm_password">Confirmer le mot de passe</Label>
-                      <div className="relative">
-                        <Input
-                          id="confirm_password"
-                          name="confirm_password"
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={formData.confirm_password}
-                          onChange={handleInputChange}
-                          placeholder="Confirmez votre mot de passe"
-                          className="rounded-xl pr-10"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Action buttons when editing */}
-            {isEditing && (
-              <div className="flex gap-3 pt-4">
-                <Button
-                  onClick={handleSave}
-                  disabled={isLoading}
-                  className="flex-1 rounded-xl"
-                >
-                  {isLoading ? (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                {/* First Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="first_name" className="text-xs sm:text-sm font-semibold">Prénom</Label>
+                  {isEditing ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Enregistrement...
+                      <Input
+                        id="first_name"
+                        type="text"
+                        placeholder="Votre prénom"
+                        {...register("first_name")}
+                        disabled={isLoading}
+                        className="h-11 sm:h-12 text-sm sm:text-base bg-background border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all rounded-xl"
+                      />
+                      {errors.first_name && <p className="text-xs sm:text-sm text-destructive">{errors.first_name.message}</p>}
                     </>
                   ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Enregistrer
-                    </>
+                    <div className="p-3 rounded-xl bg-muted/50 text-sm font-medium">
+                      {user.first_name || "Non renseigné"}
+                    </div>
                   )}
-                </Button>
-                <Button
-                  onClick={handleCancel}
-                  variant="outline"
-                  disabled={isLoading}
-                  className="flex-1 rounded-xl"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Annuler
-                </Button>
+                </div>
+
+                {/* Last Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="last_name" className="text-xs sm:text-sm font-semibold">Nom</Label>
+                  {isEditing ? (
+                    <>
+                      <Input
+                        id="last_name"
+                        type="text"
+                        placeholder="Votre nom"
+                        {...register("last_name")}
+                        disabled={isLoading}
+                        className="h-11 sm:h-12 text-sm sm:text-base bg-background border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all rounded-xl"
+                      />
+                      {errors.last_name && <p className="text-xs sm:text-sm text-destructive">{errors.last_name.message}</p>}
+                    </>
+                  ) : (
+                    <div className="p-3 rounded-xl bg-muted/50 text-sm font-medium">
+                      {user.last_name || "Non renseigné"}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-xs sm:text-sm font-semibold">Email</Label>
+                {isEditing ? (
+                  <>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="votre@email.com"
+                      {...register("email")}
+                      disabled={isLoading}
+                      className="h-11 sm:h-12 text-sm sm:text-base bg-background border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all rounded-xl"
+                    />
+                    {errors.email && <p className="text-xs sm:text-sm text-destructive">{errors.email.message}</p>}
+                  </>
+                ) : (
+                  <div className="p-3 rounded-xl bg-muted/50 text-sm font-medium">
+                    {user.email || "Non renseigné"}
+                  </div>
+                )}
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-xs sm:text-sm font-semibold">Téléphone</Label>
+                {isEditing ? (
+                  <>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="Votre numéro de téléphone"
+                      {...register("phone")}
+                      disabled={isLoading}
+                      className="h-11 sm:h-12 text-sm sm:text-base bg-background border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all rounded-xl"
+                    />
+                    {errors.phone && <p className="text-xs sm:text-sm text-destructive">{errors.phone.message}</p>}
+                  </>
+                ) : (
+                  <div className="p-3 rounded-xl bg-muted/50 text-sm font-medium">
+                    {user.phone || "Non renseigné"}
+                  </div>
+                )}
+              </div>
+
+              {/* Password fields - only show when editing */}
+              {isEditing && (
+                <>
+                  <div className="pt-4 border-t">
+                    <h3 className="text-sm font-semibold mb-4">Changer le mot de passe (optionnel)</h3>
+                    <div className="space-y-4">
+                      {/* Old Password */}
+                      <div className="space-y-2">
+                        <Label htmlFor="old_password" className="text-xs sm:text-sm font-semibold">Ancien mot de passe</Label>
+                        <div className="relative">
+                          <Input
+                            id="old_password"
+                            type={showOldPassword ? "text" : "password"}
+                            placeholder="Votre ancien mot de passe"
+                            {...register("old_password")}
+                            disabled={isLoading}
+                            className="h-11 sm:h-12 text-sm sm:text-base bg-background border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all pr-10 rounded-xl"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent rounded-r-xl"
+                            onClick={() => setShowOldPassword(!showOldPassword)}
+                            tabIndex={-1}
+                          >
+                            {showOldPassword ? (
+                              <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                            )}
+                          </Button>
+                        </div>
+                        {errors.old_password && <p className="text-xs sm:text-sm text-destructive">{errors.old_password.message}</p>}
+                      </div>
+
+                      {/* New Password */}
+                      <div className="space-y-2">
+                        <Label htmlFor="password" className="text-xs sm:text-sm font-semibold">Nouveau mot de passe</Label>
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Minimum 6 caractères"
+                            {...register("password")}
+                            disabled={isLoading}
+                            className="h-11 sm:h-12 text-sm sm:text-base bg-background border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all pr-10 rounded-xl"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent rounded-r-xl"
+                            onClick={() => setShowPassword(!showPassword)}
+                            tabIndex={-1}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                            )}
+                          </Button>
+                        </div>
+                        {errors.password && <p className="text-xs sm:text-sm text-destructive">{errors.password.message}</p>}
+                      </div>
+
+                      {/* Confirm Password */}
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm_password" className="text-xs sm:text-sm font-semibold">Confirmer le mot de passe</Label>
+                        <div className="relative">
+                          <Input
+                            id="confirm_password"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirmez votre mot de passe"
+                            {...register("confirm_password")}
+                            disabled={isLoading}
+                            className="h-11 sm:h-12 text-sm sm:text-base bg-background border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all pr-10 rounded-xl"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent rounded-r-xl"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            tabIndex={-1}
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                            )}
+                          </Button>
+                        </div>
+                        {errors.confirm_password && <p className="text-xs sm:text-sm text-destructive">{errors.confirm_password.message}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Action buttons when editing */}
+              {isEditing && (
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 h-11 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 rounded-xl"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 animate-spin" />
+                        <span className="hidden sm:inline">Enregistrement...</span>
+                        <span className="sm:hidden">En cours...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                        Enregistrer
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleCancel}
+                    variant="outline"
+                    disabled={isLoading}
+                    className="flex-1 h-11 sm:h-12 text-sm sm:text-base rounded-xl"
+                  >
+                    <X className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                    Annuler
+                  </Button>
+                </div>
+              )}
+            </form>
           </CardContent>
         </Card>
       </div>

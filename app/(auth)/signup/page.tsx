@@ -16,7 +16,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
 import logo from "@/public/logo.png"
 
-const getSignupSchema = (referralBonusEnabled: boolean) => {
+const getSignupSchema = () => {
   const baseSchema = {
     first_name: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
     last_name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -24,18 +24,7 @@ const getSignupSchema = (referralBonusEnabled: boolean) => {
     phone: z.string().min(8, "Numéro de téléphone invalide"),
     password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
     re_password: z.string().min(6, "Confirmation requise"),
-  }
-
-  if (referralBonusEnabled) {
-    return z
-      .object({
-        ...baseSchema,
-        referral_code: z.string().optional(),
-      })
-      .refine((data) => data.password === data.re_password, {
-        message: "Les mots de passe ne correspondent pas",
-        path: ["re_password"],
-      })
+      referrer_code: z.string().optional(),
   }
 
   return z.object(baseSchema).refine((data) => data.password === data.re_password, {
@@ -50,9 +39,9 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showRePassword, setShowRePassword] = useState(false)
-
-  const referralBonusEnabled = settings?.referral_bonus || false
-  const signupSchema = getSignupSchema(referralBonusEnabled)
+    const referralBonusEnabled = false
+  //const referralBonusEnabled = settings?.referral_bonus || false
+  const signupSchema = getSignupSchema()
   type SignupFormData = z.infer<typeof signupSchema>
 
   const {
@@ -66,7 +55,16 @@ export default function SignupPage() {
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true)
     try {
-      await authApi.register(data)
+        const query:typeof data = {
+            first_name: data.first_name,
+            last_name: data.last_name,
+            email: data.email,
+            phone: data.phone,
+            password: data.password,
+            re_password: data.re_password
+        }
+        if (referralBonusEnabled) query.referrer_code = data.referrer_code
+      await authApi.register(query)
       toast.success("Compte créé avec succès! Veuillez vous connecter.")
       router.push("/login")
     } catch (error) {
@@ -237,6 +235,24 @@ export default function SignupPage() {
                 </div>
                 {errors.re_password && <p className="text-xs sm:text-sm text-destructive">{errors.re_password.message}</p>}
               </div>
+
+                  {
+                      referralBonusEnabled &&(
+                          <div className="space-y-2">
+                              <Label htmlFor="referral_code" className="text-xs sm:text-sm font-semibold">Code de parrainage</Label>
+                              <Input
+                                  id="referral_code"
+                                  type="text"
+                                  placeholder="ZIGIDI970"
+                                  {...register("referrer_code")}
+                                  disabled={isLoading}
+                                  className="h-11 sm:h-12 text-sm sm:text-base bg-background border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all rounded-xl"
+                              />
+                              {errors.referrer_code && <p className="text-xs sm:text-sm text-destructive">{errors.referrer_code.message}</p>}
+                          </div>
+                      )
+                  }
+
 
               <Button
                 type="submit"

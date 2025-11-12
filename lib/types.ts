@@ -145,7 +145,7 @@ export interface Notification {
 export interface Bonus {
   id: number
   created_at: string
-  amount: string
+  amount: number
   reason_bonus: string
   transaction: number | null
   user: string
