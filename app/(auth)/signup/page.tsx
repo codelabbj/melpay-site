@@ -39,8 +39,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showRePassword, setShowRePassword] = useState(false)
-    const referralBonusEnabled = false
-  //const referralBonusEnabled = settings?.referral_bonus || false
+  const referralBonusEnabled = settings?.referral_bonus || false
   const signupSchema = getSignupSchema()
   type SignupFormData = z.infer<typeof signupSchema>
 
