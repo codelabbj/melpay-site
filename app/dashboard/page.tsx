@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowDownToLine, ArrowUpFromLine, Wallet, Loader2, ArrowRight, RefreshCw, Copy, Check, Smartphone, Ticket } from "lucide-react"
 import Link from "next/link"
 import {adsApi, transactionApi} from "@/lib/api-client"
-import type { Transaction } from "@/lib/types"
+import type {Ad, Transaction} from "@/lib/types"
 import { toast } from "react-hot-toast"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
@@ -26,7 +26,7 @@ export default function DashboardPage() {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
   const [copiedReference, setCopiedReference] = useState<string | null>(null)
-  const [ads, setAds] = useState<string[]>([])
+  const [ads, setAds] = useState<Ad[]>([])
 
 
   useEffect(() => {
@@ -154,63 +154,51 @@ export default function DashboardPage() {
 
       {/* Quick actions */}
       <div className="space-y-4 sm:space-y-5">
-        <div className="flex gap-3 sm:gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 w-full">
-          <Link href="/dashboard/deposit" className="group flex-1 sm:flex-none">
-            <Card className="relative overflow-hidden border-2 border-deposit/30 bg-gradient-to-br from-deposit via-deposit/65 to-deposit/50 hover:border-deposit/50 transition-all duration-300 hover:shadow-lg hover:shadow-deposit/40 scale-75 sm:scale-100">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
+          <Link href="/dashboard/deposit" className="group">
+            <Card className="relative overflow-hidden border-2 border-deposit/30 bg-gradient-to-br from-deposit via-deposit/65 to-deposit/50 hover:border-deposit/50 transition-all duration-300 hover:shadow-lg hover:shadow-deposit/40 h-full">
               <div className="absolute top-0 right-0 w-32 h-32 bg-deposit/20 rounded-full blur-3xl group-hover:bg-deposit/30 transition-all duration-500"></div>
-              <CardContent className="p-1 sm:p-5 lg:p-6 relative">
-                <div className=" flex flex-col sm:flex-row items-center sm:items-start sm:justify-between">
-                  <div className="p-3 sm:p-3 rounded-2xl bg-deposit/70 text-secondary-foreground ring-1 ring-deposit group-hover:scale-110 transition-transform duration-300 invisible sm:visible">
-                    <ArrowDownToLine className="h-6 w-6 visible" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-deposit/70 group-hover:translate-x-1 group-hover:text-deposit transition-all duration-300 hidden sm:block" />
+              <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
+                <div className="p-3 rounded-2xl bg-deposit/70 text-secondary-foreground ring-1 ring-deposit group-hover:scale-110 transition-transform duration-300">
+                  <ArrowDownToLine className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-foreground mt-2 sm:mt-3 hidden sm:block">Dépôt</h3>
+                <h3 className="text-base sm:text-lg font-bold text-foreground">Dépôt</h3>
               </CardContent>
             </Card>
           </Link>
 
-          <Link href="/dashboard/withdrawal" className="group flex-1 sm:flex-none">
-            <Card className="relative overflow-hidden border-2 border-withdrawal/30 bg-gradient-to-br from-withdrawal via-withdrawal/65 to-withdrawal/50 hover:border-withdrawal/50 transition-all duration-300 hover:shadow-lg hover:shadow-withdrawal/40 scale-75 sm:scale-100">
+          <Link href="/dashboard/withdrawal" className="group">
+            <Card className="relative overflow-hidden border-2 border-withdrawal/30 bg-gradient-to-br from-withdrawal via-withdrawal/65 to-withdrawal/50 hover:border-withdrawal/50 transition-all duration-300 hover:shadow-lg hover:shadow-withdrawal/40 h-full">
               <div className="absolute top-0 right-0 w-32 h-32 bg-withdrawal/20 rounded-full blur-3xl group-hover:bg-withdrawal/30 transition-all duration-500"></div>
-              <CardContent className="p-1 sm:p-5 lg:p-6 relative">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between">
-                  <div className="p-3 sm:p-3 rounded-2xl bg-withdrawal/70 text-secondary-foreground ring-1 ring-withdrawal group-hover:scale-110 transition-transform duration-300 invisible sm:visible">
-                    <ArrowUpFromLine className="h-6 w-6 visible" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-withdrawal/70 group-hover:translate-x-1 group-hover:text-withdrawal transition-all duration-300 hidden sm:block" />
+              <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
+                <div className="p-3 rounded-2xl bg-withdrawal/70 text-secondary-foreground ring-1 ring-withdrawal group-hover:scale-110 transition-transform duration-300">
+                  <ArrowUpFromLine className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-foreground mt-2 sm:mt-3 hidden sm:block">Retrait</h3>
+                <h3 className="text-base sm:text-lg font-bold text-foreground">Retrait</h3>
               </CardContent>
             </Card>
           </Link>
 
-          <Link href="/dashboard/phones" className="group flex-1 sm:flex-none">
-            <Card className="relative overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary via-primary/65 to-primary/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/40 scale-75 sm:scale-100">
+          <Link href="/dashboard/phones" className="group">
+            <Card className="relative overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary via-primary/65 to-primary/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/40 h-full">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-all duration-500"></div>
-              <CardContent className="p-1 sm:p-5 lg:p-6 relative">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between">
-                  <div className="p-3 sm:p-3 rounded-2xl bg-primary/70 text-secondary-foreground ring-1 ring-primary group-hover:scale-110 transition-transform duration-300 invisible sm:visible">
-                    <Smartphone className="h-6 w-6 visible" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-primary/70 group-hover:translate-x-1 group-hover:text-primary transition-all duration-300 hidden sm:block" />
+              <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
+                <div className="p-3 rounded-2xl bg-primary/70 text-secondary-foreground ring-1 ring-primary group-hover:scale-110 transition-transform duration-300">
+                  <Smartphone className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-foreground mt-2 sm:mt-3 hidden sm:block">Numéros & IDs</h3>
+                <h3 className="text-base sm:text-lg font-bold text-foreground">Numéros & IDs</h3>
               </CardContent>
             </Card>
           </Link>
 
-          <Link href="/dashboard/coupons" className="group flex-1 sm:flex-none">
-            <Card className="relative overflow-hidden border-2 border-blue-300/40 bg-gradient-to-br from-blue-200 via-blue-300/65 to-blue-200/50 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-300/40 scale-75 sm:scale-100">
+          <Link href="/dashboard/coupons" className="group">
+            <Card className="relative overflow-hidden border-2 border-blue-300/40 bg-gradient-to-br from-blue-200 via-blue-300/65 to-blue-200/50 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-300/40 h-full">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-300/20 rounded-full blur-3xl group-hover:bg-blue-300/30 transition-all duration-500"></div>
-              <CardContent className="p-1 sm:p-5 lg:p-6 relative">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between">
-                  <div className="p-3 sm:p-3 rounded-2xl bg-blue-300/70 text-blue-900 ring-1 ring-blue-400 group-hover:scale-110 transition-transform duration-300 invisible sm:visible">
-                    <Ticket className="h-6 w-6 visible" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-blue-400/70 group-hover:translate-x-1 group-hover:text-blue-500 transition-all duration-300 hidden sm:block" />
+              <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
+                <div className="p-3 rounded-2xl bg-blue-300/70 text-blue-900 ring-1 ring-blue-400 group-hover:scale-110 transition-transform duration-300">
+                  <Ticket className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-foreground mt-2 sm:mt-3 hidden sm:block">Coupons</h3>
+                <h3 className="text-base sm:text-lg font-bold text-foreground">Coupons</h3>
               </CardContent>
             </Card>
           </Link>
@@ -226,13 +214,13 @@ export default function DashboardPage() {
           }}
         >
           <CarouselContent>
-            {ads.map((adUrl, index) => (
+            {ads.map((ad, index) => (
               <CarouselItem key={index}>
                 <Card className="border-2 overflow-hidden">
                   <CardContent className="p-0">
                     <div className="relative w-full aspect-[21/9] sm:aspect-[21/6]">
                       <Image
-                        src={adUrl}
+                        src={ad.image}
                         alt={`Publicité ${index + 1}`}
                         fill
                         className="object-cover"
@@ -244,8 +232,13 @@ export default function DashboardPage() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious id="previous" className="left-2 sm:left-4" />
-          <CarouselNext id="next" className="right-2 sm:right-4" />
+            {ads.length > 1 && (
+                <>
+                    <CarouselPrevious id="previous" className="left-2 sm:left-4" />
+                    <CarouselNext id="next" className="right-2 sm:right-4" />
+                </>
+            )}
+
         </Carousel>
       ) : (
         <Card className="border-2 border-dashed border-muted-foreground/20 bg-muted/10">
@@ -355,7 +348,7 @@ export default function DashboardPage() {
                           {getStatusBadge(transaction.status)}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span className="font-medium px-2 py-0.5 rounded-md bg-muted/50">{transaction.app}</span>
+                          <span className="font-medium px-2 py-0.5 rounded-md bg-muted/50">{transaction.app_details.name ?? "N/A"}</span>
                           <span>•</span>
                           <span className="truncate">{transaction.phone_number}</span>
                         </div>

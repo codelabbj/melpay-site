@@ -8,7 +8,7 @@ import type {
     Transaction,
     PaginatedResponse,
     Notification,
-    Bonus, BetId, Coupon, UserProfile,
+    Bonus, BetId, Coupon, UserProfile, Ad, User,
 } from "./types"
 
 export const authApi = {
@@ -159,6 +159,15 @@ export const transactionApi = {
     const { data } = await api.post<Transaction>("/mobcash/transaction-withdrawal", withdrawalData)
     return data
   },
+
+    createBonusDeposit: async (bonusData: {
+        app: string
+        amount: number
+        user_app_id: string
+    })=>{
+        const {data }= await api.post<Transaction>("/mobcash/transaction-bonus", bonusData)
+        return data
+    }
 }
 
 export const notificationApi = {
@@ -199,7 +208,7 @@ export const fcmApi = {
 
 export const adsApi = {
     getAll: async () => {
-        const {data} = await api.get<PaginatedResponse<string>>("/mobcash/ann")
+        const {data} = await api.get<PaginatedResponse<Ad>>("/mobcash/ann")
         return data
     }
 }
@@ -212,6 +221,11 @@ export const settingApi = {
 }
 
 export const profileApi = {
+    get : async () => {
+        const {data} = await api.get<User>(`/auth/me`)
+        return data
+    },
+
     update: async (user: UserProfile) => {
         const {data} = await api.patch(`/auth/edit`, user)
         return data

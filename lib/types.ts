@@ -95,6 +95,7 @@ export interface Transaction {
     last_name: string
     email: string
   }
+  app_details:Platform
   amount: number
   deposit_reward_amount: number | null
   reference: string
@@ -189,5 +190,12 @@ export interface UserProfile {
 
 export interface Setting {
     referral_bonus: boolean
+    reward_mini_withdrawal:number
     [key: string]: any
+}
+
+export interface Ad {
+    id: number;
+    image: string;
+    enable: boolean;
 }

@@ -4,6 +4,7 @@ import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { User } from "./types"
+import {profileApi} from "@/lib/api-client";
 
 interface AuthContextType {
   user: User | null
@@ -23,27 +24,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    // Mark as hydrated first
-    setIsHydrated(true)
-    
-    // Then check localStorage
-    const accessToken = localStorage.getItem("access_token")
-    const userData = localStorage.getItem("user_data")
-    
-    console.log("AuthProvider useEffect - accessToken:", accessToken)
-    console.log("AuthProvider useEffect - userData:", userData)
+      const loadUser = async ()=>{
+          // Mark as hydrated first
+          setIsHydrated(true)
 
-    if (accessToken && userData && userData !== "undefined" && userData !== "null") {
-      try {
-        const parsedUser = JSON.parse(userData)
-        console.log("Parsed user data:", parsedUser)
-        setUser(parsedUser)
-      } catch (error) {
-        console.error("Failed to parse user data:", error)
-        localStorage.clear()
+          // Then check localStorage
+          const accessToken = localStorage.getItem("access_token")
+          const userData = localStorage.getItem("user_data")
+
+          console.log("AuthProvider useEffect - accessToken:", accessToken)
+          console.log("AuthProvider useEffect - userData:", userData)
+          if (accessToken){
+              try {
+                  const user = await profileApi.get()
+                  setUser(user)
+                  console.log("AuthProvider userData:", user)
+              }catch (error){
+                  console.error("Failed to parse user data:", error)
+                  localStorage.clear()
+              }
+          }
+          setIsLoading(false)
       }
-    }
-    setIsLoading(false)
+    loadUser()
   }, [])
 
   const login = (accessToken: string, refreshToken: string, userData: User) => {
