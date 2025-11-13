@@ -9,8 +9,6 @@ import {
     AlertCircle,
     ArrowDownToLine,
     ArrowLeft,
-    ArrowUpFromLine,
-    ExternalLink,
     Gift,
     Loader2,
     RefreshCw
