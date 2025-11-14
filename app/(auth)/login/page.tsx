@@ -105,13 +105,13 @@ export default function LoginPage() {
                   <div className="absolute inset-0 bg-primary/30 rounded-2xl blur-xl"></div>
                   <Image
                     src={logo}
-                    alt="MELPAY logo"
+                    alt="FASTXOF logo"
                     className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl ring-4 ring-primary/20 shadow-lg"
                   />
                 </div>
               </div>
               <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                MELPAY
+                FASTXOF
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground">
                 Gérez vos dépôts et retraits en toute simplicité

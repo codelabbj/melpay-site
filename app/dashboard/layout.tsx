@@ -68,12 +68,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <div className="absolute inset-0 bg-primary/20 rounded-xl blur-md group-hover:bg-primary/30 transition-all duration-300"></div>
                   <Image
                     src={logo}
-                    alt="MELPAY logo"
+                    alt="FASTXOF logo"
                     className="relative rounded-xl h-10 sm:h-12 w-auto ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all duration-300"
                   />
                 </div>
                 <h1 className="text-xl sm:text-2xl font-bold gradient-text tracking-tight">
-                  MELPAY
+                  FASTXOF
                 </h1>
               </div>
             </Link>

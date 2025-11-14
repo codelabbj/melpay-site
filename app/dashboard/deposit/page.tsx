@@ -4,8 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ExternalLink } from "lucide-react"
-import { TransactionProgressBar } from "@/components/transaction/progress-bar"
+import { ArrowLeft,CircleCheck} from "lucide-react"
+import { DepositStepper } from "@/components/transaction/deposit-stepper"
 import { StepNavigation } from "@/components/transaction/step-navigation"
 import { ConfirmationDialog } from "@/components/transaction/confirmation-dialog"
 import { PlatformStep } from "@/components/transaction/steps/platform-step"
@@ -110,12 +110,6 @@ export default function DepositPage() {
     }
   }
 
-  const handleCancelRedirect = () => {
-    setIsTransactionLinkDialogOpen(false)
-    toast.success("Dépôt initié avec succès!")
-    router.push("/dashboard")
-  }
-
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
@@ -141,7 +135,10 @@ export default function DepositPage() {
         return (
           <PlatformStep
             selectedPlatform={selectedPlatform}
-            onSelect={setSelectedPlatform}
+            onSelect={(platform)=>{
+                setSelectedPlatform(platform);
+                setTimeout(()=>{setCurrentStep(currentStep + 1)}, 1000)
+            }}
             onNext={handleNext}
           />
         )
@@ -150,7 +147,10 @@ export default function DepositPage() {
           <BetIdStep
             selectedPlatform={selectedPlatform}
             selectedBetId={selectedBetId}
-            onSelect={setSelectedBetId}
+            onSelect={(betId)=>{
+                setSelectedBetId(betId);
+                setTimeout(()=>{setCurrentStep(currentStep + 1)}, 1000)
+            }}
             onNext={handleNext}
           />
         )
@@ -158,7 +158,10 @@ export default function DepositPage() {
         return (
           <NetworkStep
             selectedNetwork={selectedNetwork}
-            onSelect={setSelectedNetwork}
+            onSelect={(network)=>{
+                setSelectedNetwork(network)
+                setTimeout(()=>{setCurrentStep(currentStep + 1)}, 1000)
+            }}
             type="deposit"
           />
         )
@@ -167,7 +170,10 @@ export default function DepositPage() {
           <PhoneStep
             selectedNetwork={selectedNetwork}
             selectedPhone={selectedPhone}
-            onSelect={setSelectedPhone}
+            onSelect={(phone)=>{
+                setSelectedPhone(phone)
+                setTimeout(()=>{setCurrentStep(currentStep + 1)}, 1000)
+            }}
             onNext={handleNext}
           />
         )
@@ -210,7 +216,7 @@ export default function DepositPage() {
         </div>
 
         {/* Progress Bar */}
-        <TransactionProgressBar 
+        <DepositStepper 
           currentStep={currentStep} 
           totalSteps={totalSteps}
           type="deposit"
@@ -255,41 +261,21 @@ export default function DepositPage() {
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-xl">
-                <ExternalLink className="h-5 w-5 text-primary" />
+                <CircleCheck className="h-5 w-5 text-primary" />
                 Finaliser le dépôt
               </DialogTitle>
               <DialogDescription className="text-base pt-2">
-                Pour compléter votre dépôt, vous devez confirmer la transaction sur la plateforme dédié.
+                  Pour terminer la transaction, veuillez cliquer sur confirmer.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="py-4">
-              <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Lien de transaction:
-                </p>
-                <p className="text-sm font-mono break-all text-primary">
-                  {transactionLink}
-                </p>
-              </div>
-            </div>
-
             <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancelRedirect}
-                className="w-full sm:w-auto order-2 sm:order-1"
-              >
-                Annuler
-              </Button>
               <Button
                 type="button"
                 onClick={handleConfirmRedirect}
                 className="w-full sm:w-auto order-1 sm:order-2 gap-2"
               >
-                Ouvrir le lien
-                <ExternalLink className="h-4 w-4" />
+                Confirmer
               </Button>
             </DialogFooter>
           </DialogContent>

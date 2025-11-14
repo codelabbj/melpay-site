@@ -98,13 +98,13 @@ export default function SignupPage() {
                   <div className="absolute inset-0 bg-primary/30 rounded-2xl blur-xl"></div>
                   <Image
                     src={logo}
-                    alt="MELPAY logo"
+                    alt="FASTXOF logo"
                     className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl ring-4 ring-primary/20 shadow-lg"
                   />
                 </div>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold mb-1.5 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                MELPAY
+                FASTXOF
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Rejoignez-nous et gérez vos transactions facilement

@@ -4,10 +4,11 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { SafeImage } from "@/components/ui/safe-image"
-import { Loader2 } from "lucide-react"
+import { Loader2, CheckCircle2 } from "lucide-react"
 import { networkApi } from "@/lib/api-client"
 import type { Network } from "@/lib/types"
 import { TRANSACTION_TYPES, getTransactionTypeLabel } from "@/lib/constants"
+import { cn } from "@/lib/utils"
 
 interface NetworkStepProps {
   selectedNetwork: Network | null
@@ -57,57 +58,48 @@ export function NetworkStep({ selectedNetwork, onSelect, type }: NetworkStepProp
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {networks.map((network) => (
-            <Card
+            <div
               key={network.id}
-              className={`group cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${
+              className={cn(
+                "relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                "hover:bg-muted/50 hover:border-primary/50",
                 selectedNetwork?.id === network.id
-                  ? "ring-2 ring-primary bg-primary/5 shadow-md"
-                  : "hover:bg-muted/50 hover:border-primary/50"
-              }`}
+                  ? "bg-primary/10 border-primary shadow-lg scale-[1.03]"
+                  : "bg-card"
+              )}
               onClick={() => onSelect(network)}
             >
-              <CardContent className="p-4">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`relative ${
-                      selectedNetwork?.id === network.id
-                        ? "ring-2 ring-primary ring-offset-2 rounded-lg"
-                        : "group-hover:ring-1 group-hover:ring-primary/30 group-hover:ring-offset-1 rounded-lg transition-all"
-                    }`}>
-                      <SafeImage
-                        src={network.image}
-                        alt={network.name}
-                        className="w-12 h-12 rounded-lg object-cover shrink-0"
-                        fallbackText={network.public_name.charAt(0).toUpperCase()}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">
-                        {network.public_name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground truncate">{network.name}</p>
-                    </div>
-                  </div>
-
-                  {(network.active_for_deposit || network.active_for_with) && (
-                    <div className="flex flex-wrap gap-1.5 pt-2 border-t border-border/50">
-                      {network.active_for_deposit && (
-                        <Badge variant="secondary" className="text-xs">
-                          {getTransactionTypeLabel(TRANSACTION_TYPES.DEPOSIT)}
-                        </Badge>
-                      )}
-                      {network.active_for_with && (
-                        <Badge variant="secondary" className="text-xs">
-                          {getTransactionTypeLabel(TRANSACTION_TYPES.WITHDRAWAL)}
-                        </Badge>
-                      )}
-                    </div>
+              {selectedNetwork?.id === network.id && (
+                <div className="absolute top-2 right-2 text-primary">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+              )}
+              <SafeImage
+                src={network.image}
+                alt={network.name}
+                className="w-14 h-14 rounded-lg object-cover shrink-0"
+                fallbackText={network.public_name.charAt(0).toUpperCase()}
+              />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-lg truncate text-card-foreground">
+                  {network.public_name}
+                </h3>
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  {network.active_for_deposit && (
+                    <Badge variant="outline" className="text-xs font-medium border-green-500/50 text-green-700 bg-green-500/10">
+                      {getTransactionTypeLabel(TRANSACTION_TYPES.DEPOSIT)}
+                    </Badge>
+                  )}
+                  {network.active_for_with && (
+                    <Badge variant="outline" className="text-xs font-medium border-blue-500/50 text-blue-700 bg-blue-500/10">
+                      {getTransactionTypeLabel(TRANSACTION_TYPES.WITHDRAWAL)}
+                    </Badge>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 
