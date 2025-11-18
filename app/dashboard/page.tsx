@@ -52,7 +52,7 @@ export default function DashboardPage() {
             if (next) next.click()
         }
 
-        const intervalId = setInterval(carrouselAutoScroll,500)
+        const intervalId = setInterval(carrouselAutoScroll,5000)
         return () => clearInterval(intervalId)
     })
 
@@ -216,19 +216,15 @@ export default function DashboardPage() {
           <CarouselContent>
             {ads.map((ad, index) => (
               <CarouselItem key={index}>
-                <Card className="border-2 overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="relative w-full aspect-[21/9] sm:aspect-[21/6]">
+                  <div className="relative w-full aspect-[21/9] sm:aspect-[21/6]">
                       <Image
-                        src={ad.image}
-                        alt={`Publicité ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        priority={index === 0}
+                          src={ad.image}
+                          alt={`Publicité ${index + 1}`}
+                          fill
+                          className="object-fit border-2 rounded-lg"
+                          priority={index === 0}
                       />
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
               </CarouselItem>
             ))}
           </CarouselContent>

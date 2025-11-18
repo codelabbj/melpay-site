@@ -55,8 +55,8 @@ export default function CouponsPage() {
     }
 
     const getTimeAgo = (dateString: string) => {
-        const createdDate = new Date(dateString)
-        const now = new Date()
+        const createdDate = new Date(dateString).setHours(0, 0, 0, 0)
+        const now = new Date().setHours(0, 0, 0, 0)
         const daysDiff = differenceInDays(now, createdDate)
 
         if (daysDiff === 0) {
