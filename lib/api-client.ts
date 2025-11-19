@@ -193,16 +193,16 @@ export const couponApi = {
 
 export const fcmApi = {
   registerToken: async (token: string, platform: string = 'web', userId?: string | number) => {
-    const { data } = await api.post('/mobcash/fcm-token/', {
-      token,
-      platform,
+    const { data } = await api.post('/mobcash/devices/', {
+      registration_id:token,
+      type: platform,
       user_id: userId || null,
     })
     return data
   },
 
   deleteToken: async (token: string) => {
-    await api.delete(`/mobcash/fcm-token/${token}/`)
+    await api.delete(`/mobcash/devices/${token}/`)
   },
 }
 

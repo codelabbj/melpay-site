@@ -105,7 +105,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             asChild
                             className="relative overflow-hidden rounded-xl px-3 sm:px-4 h-10 font-semibold text-white border-0 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
                             style={{
-                                background: 'linear-gradient(135deg, hsl(220, 90%, 56%) 20%, hsl(280, 85%, 60%) 100%)',
+                                background: 'linear-gradient(135deg, oklch(0.75 0.18 85) 0%, oklch(0.25 0.04 255) 100%)',
                             }}
                         >
                             <Link href="/dashboard/bonus" className="flex items-center gap-2">
@@ -198,7 +198,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* Main content */}
-      <main className="container mx-auto px-4 py-8 relative z-10">{children}</main>
+      <main className="container mx-auto px-4 py-8 relative z-20">{children}</main>
+
+      {/* Footer */}
+      <footer className="w-full bg-background relative z-10 py-6 sm:py-8">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">
+              Développé par{" "}
+              <Link
+                href="https://wa.me/22947030588"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:underline transition-all duration-300"
+              >
+                Code Lab
+              </Link>
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

@@ -4,13 +4,13 @@ importScripts('https://www.gstatic.com/firebasejs/11.0.0/firebase-messaging-comp
 
 // Firebase configuration - REPLACE WITH YOUR CONFIG
 const firebaseConfig = {
-  apiKey: "AIzaSyDkkEeWXUZd2oUnQp82MlkosahPSfkCY8o",
-  authDomain: "zefast-9b2d4.firebaseapp.com",
-  projectId: "zefast-9b2d4",
-  storageBucket: "zefast-9b2d4.firebasestorage.app",
-  messagingSenderId: "571907882935",
-  appId: "1:571907882935:web:6c5f48a239be77465af232",
-  measurementId: "G-JT8SDZVGT5"
+    apiKey: "AIzaSyCRrkubYOImTWxQT6W34mupBY9Llee8a5A",
+    authDomain: "fastxof-a691c.firebaseapp.com",
+    projectId: "fastxof-a691c",
+    storageBucket: "fastxof-a691c.firebasestorage.app",
+    messagingSenderId: "618522866662",
+    appId: "1:618522866662:web:83154970d3b5ceca771c27",
+    measurementId: "G-9P783TSKDJ"
 };
 
 // Initialize Firebase

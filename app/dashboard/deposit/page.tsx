@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft,CircleCheck} from "lucide-react"
+import { ArrowLeft,CircleCheck, Copy, Check} from "lucide-react"
 import { DepositStepper } from "@/components/transaction/deposit-stepper"
 import { StepNavigation } from "@/components/transaction/step-navigation"
 import { ConfirmationDialog } from "@/components/transaction/confirmation-dialog"
@@ -24,10 +24,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import {useSettings} from "@/lib/settings-context";
 
 export default function DepositPage() {
   const router = useRouter()
   const { user } = useAuth()
+    const {settings} = useSettings()
   
   // Step management
   const [currentStep, setCurrentStep] = useState(1)
@@ -47,6 +49,11 @@ export default function DepositPage() {
   // Transaction link dialog
   const [isTransactionLinkDialogOpen, setIsTransactionLinkDialogOpen] = useState(false)
   const [transactionLink, setTransactionLink] = useState<string>("")
+
+  // Moov USSD dialog
+  const [isMoovUSSDDialogOpen, setIsMoovUSSDDialogOpen] = useState(false)
+  const [moovUSSDCode, setMoovUSSDCode] = useState<string>("")
+  const [copiedUSSD, setCopiedUSSD] = useState(false)
 
   // Redirect if not authenticated
   if (!user) {
@@ -91,8 +98,34 @@ export default function DepositPage() {
         setTransactionLink(response.transaction_link)
         setIsTransactionLinkDialogOpen(true)
       } else {
-        toast.success("Dépôt initié avec succès!")
-        router.push("/dashboard")
+        // Check if Moov network and API is connected
+        const isMoov = selectedNetwork?.name?.toLowerCase() === "moov"
+        const isMoovConnected = selectedNetwork?.deposit_api === "connect" && isMoov
+
+        if (isMoovConnected && settings) {
+          // Generate USSD code: 155*2*1*settings.moov_marchand_phone*amount-1% of amount#
+          const fee = Math.ceil(amount * 0.01) // 1% fee
+          const netAmount = amount - fee
+          const ussdCode = `155*2*1*${settings.moov_marchand_phone}*${netAmount}#`
+
+          // Check if device is a phone
+          const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+          if (isMobileDevice) {
+            // On mobile, open USSD code
+            window.location.href = `tel:${ussdCode}`
+            toast.success("Dépôt initié avec succès!")
+            setTimeout(() => router.push("/dashboard"), 2000)
+          } else {
+            // On desktop, show dialog with USSD code to copy
+            setIsMoovUSSDDialogOpen(true)
+            setMoovUSSDCode(ussdCode)
+            setIsConfirmationOpen(false)
+          }
+        } else {
+          toast.success("Dépôt initié avec succès!")
+          router.push("/dashboard")
+        }
       }
     } catch (error) {
       toast.error("Erreur lors de la création du dépôt")
@@ -274,6 +307,72 @@ export default function DepositPage() {
                 type="button"
                 onClick={handleConfirmRedirect}
                 className="w-full sm:w-auto order-1 sm:order-2 gap-2"
+              >
+                Confirmer
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Moov USSD Code Dialog */}
+        <Dialog open={isMoovUSSDDialogOpen} onOpenChange={setIsMoovUSSDDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <CircleCheck className="h-5 w-5 text-primary" />
+                Code USSD Moov
+              </DialogTitle>
+              <DialogDescription className="text-base pt-2">
+                  Vous êtes sur un ordinateur. Veuillez copier ce code et le saisir sur votre téléphone mobile.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="relative">
+                <div className="bg-muted/50 p-4 rounded-lg border-2 border-primary/30">
+                  <code className="text-sm font-mono text-center break-all text-foreground">
+                    {moovUSSDCode}
+                  </code>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(moovUSSDCode)
+                    setCopiedUSSD(true)
+                    setTimeout(() => setCopiedUSSD(false), 2000)
+                    toast.success("Code copié!")
+                  }}
+                  className="absolute right-2 top-2 gap-2"
+                >
+                  {copiedUSSD ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+              <div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
+                <p className="text-sm text-foreground">
+                  <span className="font-semibold">Instructions:</span> Copiez le code ci-dessus, puis tapez-le sur votre téléphone mobile pour effectuer la transaction.
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsMoovUSSDDialogOpen(false)}
+                className="w-full sm:w-auto"
+              >
+                Fermer
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsMoovUSSDDialogOpen(false)
+                  toast.success("Dépôt initié avec succès!")
+                  router.push("/dashboard")
+                }}
+                className="w-full sm:w-auto"
               >
                 Confirmer
               </Button>
