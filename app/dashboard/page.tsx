@@ -167,10 +167,10 @@ export default function DashboardPage() {
               <div className="space-y-4 sm:space-y-5">
                   <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
                       <Link href="/dashboard/deposit" className="group">
-                          <Card className="relative overflow-hidden border-2 border-deposit/30 bg-gradient-to-br from-deposit via-deposit/85 to-deposit/75 hover:border-deposit/50 transition-all duration-300 hover:shadow-lg hover:shadow-deposit/40 h-full">
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-deposit/20 rounded-full blur-3xl group-hover:bg-deposit/30 transition-all duration-500"></div>
+                          <Card className="relative overflow-hidden border-2 border-deposit/60 bg-gradient-to-br from-deposit via-deposit/95 to-deposit/85 hover:border-deposit/80 transition-all duration-300 hover:shadow-lg hover:shadow-deposit/50 h-full">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-deposit/40 rounded-full blur-3xl group-hover:bg-deposit/50 transition-all duration-500"></div>
                               <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
-                                  <div className="p-3 rounded-2xl bg-deposit/30 backdrop-blur-md text-secondary-foreground ring-1 ring-deposit/40 group-hover:scale-110 transition-transform duration-300">
+                                  <div className="p-3 rounded-2xl bg-white/95 text-deposit ring-2 ring-deposit/80 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-deposit/60 border-2 border-deposit/40">
                                       <ArrowDownToLine className="h-6 w-6" />
                                   </div>
                                   <h3 className="text-base sm:text-lg font-bold text-foreground">Dépôt</h3>
@@ -179,10 +179,10 @@ export default function DashboardPage() {
                       </Link>
 
                       <Link href="/dashboard/withdrawal" className="group">
-                          <Card className="relative overflow-hidden border-2 border-withdrawal/30 bg-gradient-to-br from-withdrawal via-withdrawal/85 to-withdrawal/75 hover:border-withdrawal/50 transition-all duration-300 hover:shadow-lg hover:shadow-withdrawal/40 h-full">
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-withdrawal/20 rounded-full blur-3xl group-hover:bg-withdrawal/30 transition-all duration-500"></div>
+                          <Card className="relative overflow-hidden border-2 border-withdrawal/60 bg-gradient-to-br from-withdrawal via-withdrawal/95 to-withdrawal/85 hover:border-withdrawal/80 transition-all duration-300 hover:shadow-lg hover:shadow-withdrawal/50 h-full">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-withdrawal/40 rounded-full blur-3xl group-hover:bg-withdrawal/50 transition-all duration-500"></div>
                               <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
-                                  <div className="p-3 rounded-2xl bg-withdrawal/30 backdrop-blur-md text-secondary-foreground ring-1 ring-withdrawal/40 group-hover:scale-110 transition-transform duration-300">
+                                  <div className="p-3 rounded-2xl bg-white/95 text-withdrawal ring-2 ring-withdrawal/80 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-withdrawal/60 border-2 border-withdrawal/40">
                                       <ArrowUpFromLine className="h-6 w-6" />
                                   </div>
                                   <h3 className="text-base sm:text-lg font-bold text-foreground">Retrait</h3>
@@ -191,10 +191,10 @@ export default function DashboardPage() {
                       </Link>
 
                       <Link href="/dashboard/phones" className="group">
-                          <Card className="relative overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary via-primary/85 to-primary/75 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/40 h-full">
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-all duration-500"></div>
+                          <Card className="relative overflow-hidden border-2 border-primary/60 bg-gradient-to-br from-primary via-primary/95 to-primary/85 hover:border-primary/80 transition-all duration-300 hover:shadow-lg hover:shadow-primary/50 h-full">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/40 rounded-full blur-3xl group-hover:bg-primary/50 transition-all duration-500"></div>
                               <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
-                                  <div className="p-3 rounded-2xl bg-primary/30 backdrop-blur-md text-secondary-foreground ring-1 ring-primary/40 group-hover:scale-110 transition-transform duration-300">
+                                  <div className="p-3 rounded-2xl bg-white/95 text-primary ring-2 ring-primary/80 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-primary/60 border-2 border-primary/40">
                                       <Smartphone className="h-6 w-6" />
                                   </div>
                                   <h3 className="text-base sm:text-lg font-bold text-foreground">Numéros & IDs</h3>
@@ -203,10 +203,10 @@ export default function DashboardPage() {
                       </Link>
 
                       <Link href="/dashboard/coupons" className="group">
-                          <Card className="relative overflow-hidden border-2 border-blue-300/40 bg-gradient-to-br from-blue-200 via-blue-300/85 to-blue-200/75 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-300/40 h-full">
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-300/20 rounded-full blur-3xl group-hover:bg-blue-300/30 transition-all duration-500"></div>
+                          <Card className="relative overflow-hidden border-2 border-cyan-400/70 bg-gradient-to-br from-cyan-300 via-cyan-400/95 to-cyan-300/85 hover:border-cyan-500/80 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-400/50 h-full">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/40 rounded-full blur-3xl group-hover:bg-cyan-400/50 transition-all duration-500"></div>
                               <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
-                                  <div className="p-3 rounded-2xl bg-blue-300/30 backdrop-blur-md text-blue-900 ring-1 ring-blue-400/40 group-hover:scale-110 transition-transform duration-300">
+                                  <div className="p-3 rounded-2xl bg-white/95 text-cyan-600 ring-2 ring-cyan-500/80 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-cyan-400/60 border-2 border-cyan-500/40">
                                       <Ticket className="h-6 w-6" />
                                   </div>
                                   <h3 className="text-base sm:text-lg font-bold text-foreground">Coupons</h3>
