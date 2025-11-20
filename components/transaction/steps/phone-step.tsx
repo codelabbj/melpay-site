@@ -17,7 +17,21 @@ import {
     AlertDialogDescription, AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle
-} from "@/components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+
+const COUNTRIES = [
+    { code: "225", name: "Côte d'Ivoire" },
+    { code: "229", name: "Bénin" },
+    { code: "221", name: "Sénégal" },
+    { code: "226", name: "Burkina Faso" },
+]
 
 interface PhoneStepProps {
   selectedNetwork: Network | null
@@ -26,13 +40,15 @@ interface PhoneStepProps {
   onNext: () => void
 }
 
-export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: PhoneStepProps) {
+export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneStepProps) {
   const [phones, setPhones] = useState<UserPhone[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingPhone, setEditingPhone] = useState<UserPhone | null>(null)
   const [newPhone, setNewPhone] = useState("")
+  const [selectedCountry, setSelectedCountry] = useState<string>("225")
+  const [selectedEditCountry, setSelectedEditCountry] = useState<string>("225")
   const [isSubmitting, setIsSubmitting] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
@@ -62,10 +78,20 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
 
   const handleAddPhone = async () => {
     if (!newPhone.trim() || !selectedNetwork) return
-    
+
+    // Validate and clean phone number
+    const cleanedPhone = newPhone.trim().replace(/\s+/g, "")
+
+    // Check if phone number contains only digits
+    if (!/^\d+$/.test(cleanedPhone)) {
+      toast.error("Veuillez entrer uniquement des chiffres")
+      return
+    }
+
     setIsSubmitting(true)
     try {
-      const newPhoneData = await phoneApi.create(newPhone.trim(), selectedNetwork.id)
+        const phone = selectedCountry + cleanedPhone
+      const newPhoneData = await phoneApi.create(phone, selectedNetwork.id)
       setPhones(prev => [...prev, newPhoneData])
       setNewPhone("")
       setIsAddDialogOpen(false)
@@ -79,15 +105,25 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
 
   const handleEditPhone = async () => {
     if (!newPhone.trim() || !editingPhone || !selectedNetwork) return
-    
+
+    // Validate and clean phone number
+    const cleanedPhone = newPhone.trim().replace(/\s+/g, "")
+
+    // Check if phone number contains only digits
+    if (!/^\d+$/.test(cleanedPhone)) {
+      toast.error("Veuillez entrer uniquement des chiffres")
+      return
+    }
+
     setIsSubmitting(true)
     try {
+        const phone = selectedEditCountry + cleanedPhone
       const updatedPhone = await phoneApi.update(
         editingPhone.id,
-        newPhone.trim(),
+        phone,
         selectedNetwork.id
       )
-      setPhones(prev => prev.map(phone => 
+      setPhones(prev => prev.map(phone =>
         phone.id === editingPhone.id ? updatedPhone : phone
       ))
       setNewPhone("")
@@ -170,7 +206,7 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">
-                          {phone.phone}
+                          +{phone.phone.slice(0,3)} {phone.phone.slice(3)}
                         </h3>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="outline" className="text-xs">
@@ -244,17 +280,32 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
           <DialogHeader>
             <DialogTitle>Ajouter un numéro de téléphone</DialogTitle>
             <DialogDescription>
-              Entrez votre numéro {selectedNetwork.public_name}
+              Sélectionnez votre pays et entrez votre numéro de téléphone
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <div>
+              <Label htmlFor="country">Pays</Label>
+              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                <SelectTrigger id="country">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                        {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label htmlFor="phone">Numéro de téléphone</Label>
               <Input
                 id="phone"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
-                placeholder="Ex: +225 07 12 34 56 78"
+                placeholder="Ex: 0712345678"
               />
             </div>
           </div>
@@ -282,17 +333,32 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect, onNext }: 
           <DialogHeader>
             <DialogTitle>Modifier le numéro de téléphone</DialogTitle>
             <DialogDescription>
-              Modifiez votre numéro {selectedNetwork.public_name}
+              Sélectionnez votre pays et modifiez votre numéro de téléphone
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <div>
+              <Label htmlFor="editCountry">Pays</Label>
+              <Select value={selectedEditCountry} onValueChange={setSelectedEditCountry}>
+                <SelectTrigger id="editCountry">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                        {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label htmlFor="editPhone">Numéro de téléphone</Label>
               <Input
                 id="editPhone"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
-                placeholder="Ex: +225 07 12 34 56 78"
+                placeholder="Ex: 0712345678"
               />
             </div>
           </div>

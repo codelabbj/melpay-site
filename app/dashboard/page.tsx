@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect} from "react"
+import { useState, useEffect, useRef} from "react"
 import { useAuth } from "@/lib/auth-context"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -32,6 +32,8 @@ export default function DashboardPage() {
   const [copiedReference, setCopiedReference] = useState<string | null>(null)
     const [isChatPopoverOpen, setIsChatPopoverOpen] = useState<boolean>(false)
   const [ads, setAds] = useState<Ad[]>([])
+  const [isCarouselHovered, setIsCarouselHovered] = useState(false)
+  const carouselRef = useRef<HTMLDivElement>(null)
 
 
   useEffect(() => {
@@ -53,13 +55,16 @@ export default function DashboardPage() {
 
     useEffect(()=>{
         const carrouselAutoScroll = ()=>{
-            const next = document.getElementById("next")
-            if (next) next.click()
+            // Only auto scroll if carousel is not being hovered
+            if (!isCarouselHovered) {
+                const next = document.getElementById("next")
+                if (next) next.click()
+            }
         }
 
-        const intervalId = setInterval(carrouselAutoScroll,5000)
+        const intervalId = setInterval(carrouselAutoScroll, 5000)
         return () => clearInterval(intervalId)
-    })
+    }, [isCarouselHovered])
 
   const fetchRecentTransactions = async () => {
     try {
@@ -213,39 +218,45 @@ export default function DashboardPage() {
 
               {/* Ads Section */}
               {ads.length > 0 ? (
-                  <Carousel
-                      className="w-full"
-                      opts={{
-                          loop: true,
-                      }}
+                  <div
+                      ref={carouselRef}
+                      onMouseEnter={() => setIsCarouselHovered(true)}
+                      onMouseLeave={() => setIsCarouselHovered(false)}
                   >
-                      <CarouselContent>
-                          {ads.map((ad, index) =>
-                              ad.enable ? (
-                                  <CarouselItem key={index}>
-                                      <div className="relative w-full aspect-[21/9] sm:aspect-[21/6]">
-                                          <Image
-                                              src={ad.image}
-                                              alt={`Publicité ${index + 1}`}
-                                              fill
-                                              className="object-fit border-2 rounded-lg"
-                                              priority={index === 0}
-                                          />
-                                      </div>
-                                  </CarouselItem>
-                              ):(
-                                  <></>
-                              )
+                      <Carousel
+                          className="w-full"
+                          opts={{
+                              loop: true,
+                          }}
+                      >
+                          <CarouselContent>
+                              {ads.map((ad, index) =>
+                                  ad.enable ? (
+                                      <CarouselItem key={index}>
+                                          <div className="relative w-full aspect-[21/9] sm:aspect-[21/6]">
+                                              <Image
+                                                  src={ad.image}
+                                                  alt={`Publicité ${index + 1}`}
+                                                  fill
+                                                  className="object-fit border-2 rounded-lg"
+                                                  priority={index === 0}
+                                              />
+                                          </div>
+                                      </CarouselItem>
+                                  ):(
+                                      <></>
+                                  )
+                              )}
+                          </CarouselContent>
+                          {ads.length > 1 && (
+                              <>
+                                  <CarouselPrevious id="previous" className="left-2 sm:left-4" />
+                                  <CarouselNext id="next" className="right-2 sm:right-4" />
+                              </>
                           )}
-                      </CarouselContent>
-                      {ads.length > 1 && (
-                          <>
-                              <CarouselPrevious id="previous" className="left-2 sm:left-4" />
-                              <CarouselNext id="next" className="right-2 sm:right-4" />
-                          </>
-                      )}
 
-                  </Carousel>
+                      </Carousel>
+                  </div>
               ) : (
                   <Card className="border-2 border-dashed border-muted-foreground/20 bg-muted/10">
                       <CardContent className="flex items-center justify-center py-8 sm:py-12">

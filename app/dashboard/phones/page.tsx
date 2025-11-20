@@ -37,7 +37,15 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {data} from "autoprefixer";
 
+const COUNTRIES = [
+    { code: "225", name: "Côte d'Ivoire" },
+    { code: "229", name: "Bénin" },
+    { code: "221", name: "Sénégal" },
+    { code: "226", name: "Burkina Faso" },
+]
+
 const phoneSchema = z.object({
+  country: z.string().min(1, "Pays requis"),
   phone: z.string().min(8, "Numéro de téléphone invalide"),
   network: z.number().min(1, "Réseau requis"),
 })
@@ -137,11 +145,24 @@ export default function PhonesPage() {
   const handlePhoneSubmit = async (data: PhoneFormData) => {
     setIsSubmitting(true)
     try {
+      // Validate and clean phone number
+      const cleanedPhone = data.phone.trim().replace(/\s+/g, "")
+
+      // Check if phone number contains only digits
+      if (!/^\d+$/.test(cleanedPhone)) {
+        toast.error("Veuillez entrer uniquement des chiffres")
+        setIsSubmitting(false)
+        return
+      }
+
+      // Combine country code with cleaned phone number
+      const fullPhone = data.country + cleanedPhone
+
       if (editingPhone) {
-        await phoneApi.update(editingPhone.id, data.phone, data.network)
+        await phoneApi.update(editingPhone.id, fullPhone, data.network)
         toast.success("Numéro modifié avec succès!")
       } else {
-        await phoneApi.create(data.phone, data.network)
+        await phoneApi.create(fullPhone, data.network)
         toast.success("Numéro ajouté avec succès!")
       }
       setIsPhoneDialogOpen(false)
@@ -150,6 +171,7 @@ export default function PhonesPage() {
       loadData()
     } catch (error) {
       console.error("Phone operation error:", error)
+      toast.error("Erreur lors de l'opération téléphone")
     } finally {
       setIsSubmitting(false)
     }
@@ -213,9 +235,18 @@ export default function PhonesPage() {
 
   const openEditPhoneDialog = (phone: UserPhone) => {
     setEditingPhone(phone)
+
+    // Extract country code from phone number (first 3 digits typically)
+    // Check against known country codes
+    const countryCode = COUNTRIES.find(c => phone.phone.startsWith(c.code))?.code || "225"
+
+    // Extract the phone number without country code
+    const phoneWithoutCountry = phone.phone.substring(countryCode.length)
+
     phoneForm.reset({
-      phone: phone.phone,
-      network: phone.network,
+      country: countryCode,
+      phone: phoneWithoutCountry,
+      network: phone.network ,
     })
     setIsPhoneDialogOpen(true)
   }
@@ -323,11 +354,34 @@ export default function PhonesPage() {
                           </DialogHeader>
                           <form onSubmit={phoneForm.handleSubmit(handlePhoneSubmit)} className="space-y-4">
                               <div className="space-y-2">
+                                  <Label htmlFor="country">Pays</Label>
+                                  <Select
+                                      onValueChange={(value) => phoneForm.setValue("country", value)}
+                                      defaultValue={editingPhone ? phoneForm.getValues("country") : "225"}
+                                      disabled={isSubmitting}
+                                  >
+                                      <SelectTrigger id="country">
+                                          <SelectValue placeholder="Sélectionnez votre pays" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                          {COUNTRIES.map((country) => (
+                                              <SelectItem key={country.code} value={country.code}>
+                                                  {country.name}
+                                              </SelectItem>
+                                          ))}
+                                      </SelectContent>
+                                  </Select>
+                                  {phoneForm.formState.errors.country && (
+                                      <p className="text-sm text-destructive">{phoneForm.formState.errors.country.message}</p>
+                                  )}
+                              </div>
+
+                              <div className="space-y-2">
                                   <Label htmlFor="phone">Numéro de téléphone</Label>
                                   <Input
                                       id="phone"
                                       type="tel"
-                                      placeholder="+225 01 02 03 04 05"
+                                      placeholder="Ex: 0712345678"
                                       {...phoneForm.register("phone")}
                                       disabled={isSubmitting}
                                   />
@@ -349,7 +403,7 @@ export default function PhonesPage() {
                                       <SelectContent>
                                           {networks.map((network) => (
                                               <SelectItem key={network.id} value={network.id.toString()}>
-                                                  {network.name}
+                                                  {network.public_name}
                                               </SelectItem>
                                           ))}
                                       </SelectContent>

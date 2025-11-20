@@ -108,20 +108,15 @@ export default function DepositPage() {
           const netAmount = amount - fee
           const ussdCode = `155*2*1*${settings.moov_marchand_phone}*${netAmount}#`
 
-          // Check if device is a phone
-          const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+          // Always show the USSD dialog
+          setIsMoovUSSDDialogOpen(true)
+          setMoovUSSDCode(ussdCode)
+          setIsConfirmationOpen(false)
 
-          if (isMobileDevice) {
-            // On mobile, open USSD code
-            window.location.href = `tel:${ussdCode}`
-            toast.success("Dépôt initié avec succès!")
-            setTimeout(() => router.push("/dashboard"), 2000)
-          } else {
-            // On desktop, show dialog with USSD code to copy
-            setIsMoovUSSDDialogOpen(true)
-            setMoovUSSDCode(ussdCode)
-            setIsConfirmationOpen(false)
-          }
+            setTimeout(() => {
+                window.location.href = `tel:${ussdCode}`
+            }, 500)
+
         } else {
           toast.success("Dépôt initié avec succès!")
           router.push("/dashboard")
@@ -323,7 +318,7 @@ export default function DepositPage() {
                 Code USSD Moov
               </DialogTitle>
               <DialogDescription className="text-base pt-2">
-                  Vous êtes sur un ordinateur. Veuillez copier ce code et le saisir sur votre téléphone mobile.
+                  Vous êtes sur un ordinateur? Veuillez copier ce code et le saisir sur votre téléphone mobile.
               </DialogDescription>
             </DialogHeader>
 
