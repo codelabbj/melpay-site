@@ -35,7 +35,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {data} from "autoprefixer";
 
 const COUNTRIES = [
     { code: "225", name: "Côte d'Ivoire" },
