@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
     ArrowDownToLine, ArrowUpFromLine, Wallet, Loader2, ArrowRight, RefreshCw, Copy, Check, Smartphone, Ticket,
-    MessageSquare, Send
+    MessageSquare, Send, CreditCard, Phone
 } from "lucide-react"
 import Link from "next/link"
 import {adsApi, transactionApi} from "@/lib/api-client"
@@ -133,89 +133,6 @@ export default function DashboardPage() {
                   </p>
               </div>
 
-              {/* Balance card */}
-              {/* <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-0">
-        <CardHeader>
-          <CardDescription className="text-primary-foreground/80">Solde disponible</CardDescription>
-          <CardTitle className="text-4xl font-bold">
-            {user?.balance?.toLocaleString("fr-FR", {
-              style: "currency",
-              currency: "XOF",
-              minimumFractionDigits: 0,
-            }) || "0 FCFA"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3">
-            <Button asChild variant="secondary" size="sm" className="text-deposit border-deposit hover:bg-deposit/10">
-              <Link href="/dashboard/deposit">
-                <ArrowDownToLine className="mr-2 h-4 w-4 text-deposit" />
-                Déposer
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" size="sm" className="text-withdrawal border-withdrawal hover:bg-withdrawal/10">
-              <Link href="/dashboard/withdrawal">
-                <ArrowUpFromLine className="mr-2 h-4 w-4 text-withdrawal" />
-                Retirer
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card> */}
-
-              {/* Quick actions */}
-              <div className="space-y-4 sm:space-y-5">
-                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
-                      <Link href="/dashboard/deposit" className="group">
-                          <Card className="relative overflow-hidden border-2 border-deposit/60 bg-gradient-to-br from-deposit via-deposit/95 to-deposit/85 hover:border-deposit/80 transition-all duration-300 hover:shadow-lg hover:shadow-deposit/50 h-full">
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-deposit/40 rounded-full blur-3xl group-hover:bg-deposit/50 transition-all duration-500"></div>
-                              <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
-                                  <div className="p-3 rounded-2xl bg-white/95 text-deposit ring-2 ring-deposit/80 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-deposit/60 border-2 border-deposit/40">
-                                      <ArrowDownToLine className="h-6 w-6" />
-                                  </div>
-                                  <h3 className="text-base sm:text-lg font-bold text-foreground">Dépôt</h3>
-                              </CardContent>
-                          </Card>
-                      </Link>
-
-                      <Link href="/dashboard/withdrawal" className="group">
-                          <Card className="relative overflow-hidden border-2 border-withdrawal/60 bg-gradient-to-br from-withdrawal via-withdrawal/95 to-withdrawal/85 hover:border-withdrawal/80 transition-all duration-300 hover:shadow-lg hover:shadow-withdrawal/50 h-full">
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-withdrawal/40 rounded-full blur-3xl group-hover:bg-withdrawal/50 transition-all duration-500"></div>
-                              <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
-                                  <div className="p-3 rounded-2xl bg-white/95 text-withdrawal ring-2 ring-withdrawal/80 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-withdrawal/60 border-2 border-withdrawal/40">
-                                      <ArrowUpFromLine className="h-6 w-6" />
-                                  </div>
-                                  <h3 className="text-base sm:text-lg font-bold text-foreground">Retrait</h3>
-                              </CardContent>
-                          </Card>
-                      </Link>
-
-                      <Link href="/dashboard/phones" className="group">
-                          <Card className="relative overflow-hidden border-2 border-primary/60 bg-gradient-to-br from-primary via-primary/95 to-primary/85 hover:border-primary/80 transition-all duration-300 hover:shadow-lg hover:shadow-primary/50 h-full">
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/40 rounded-full blur-3xl group-hover:bg-primary/50 transition-all duration-500"></div>
-                              <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
-                                  <div className="p-3 rounded-2xl bg-white/95 text-primary ring-2 ring-primary/80 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-primary/60 border-2 border-primary/40">
-                                      <Smartphone className="h-6 w-6" />
-                                  </div>
-                                  <h3 className="text-base sm:text-lg font-bold text-foreground">Numéros & IDs</h3>
-                              </CardContent>
-                          </Card>
-                      </Link>
-
-                      <Link href="/dashboard/coupons" className="group">
-                          <Card className="relative overflow-hidden border-2 border-cyan-400/70 bg-gradient-to-br from-cyan-300 via-cyan-400/95 to-cyan-300/85 hover:border-cyan-500/80 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-400/50 h-full">
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/40 rounded-full blur-3xl group-hover:bg-cyan-400/50 transition-all duration-500"></div>
-                              <CardContent className="p-4 sm:p-5 lg:p-6 relative flex flex-col items-center justify-center text-center gap-2 h-full">
-                                  <div className="p-3 rounded-2xl bg-white/95 text-cyan-600 ring-2 ring-cyan-500/80 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-cyan-400/60 border-2 border-cyan-500/40">
-                                      <Ticket className="h-6 w-6" />
-                                  </div>
-                                  <h3 className="text-base sm:text-lg font-bold text-foreground">Coupons</h3>
-                              </CardContent>
-                          </Card>
-                      </Link>
-                  </div>
-              </div>
-
               {/* Ads Section */}
               {ads.length > 0 ? (
                   <div
@@ -272,11 +189,75 @@ export default function DashboardPage() {
                   </Card>
               )}
 
+              {/* Quick actions */}
+              <div className="space-y-4 sm:space-y-5">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
+                      <Link href="/dashboard/deposit" className="group h-full">
+                          <Card className="relative p-6 sm:p-7 md:p-8 lg:p-10 rounded-2xl cursor-pointer transition-all duration-500 cubic-bezier(0.175, 0.885, 0.32, 1.275) overflow-hidden backdrop-blur-lg border border-white/10 bg-gradient-to-br from-emerald-400 to-emerald-600 animate-fadeInUp group-hover:-translate-y-3 group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-black/40 h-full">
+                              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-emerald-600 opacity-90 -z-10"></div>
+                              <div className="absolute w-20 h-20 sm:w-24 sm:h-24 bg-white/20 rounded-full blur-2xl top-0 right-0 group-hover:translate-x-6 group-hover:-translate-y-6 transition-all duration-600"></div>
+                              <div className="relative z-10 flex flex-col items-center text-center gap-4 sm:gap-6 h-full">
+                                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/25 rounded-lg sm:rounded-xl backdrop-blur-lg border border-white/30 flex items-center justify-center transition-all duration-500 group-hover:bg-white/35">
+                                      <ArrowDownToLine className="h-8 w-8 sm:h-10 sm:w-10 text-white" strokeWidth={2} />
+                                  </div>
+                                  <div>
+                                      <h3 className="text-base sm:text-lg md:text-xl lg:text-xl font-bold text-white drop-shadow mb-1 sm:mb-2">Dépôt</h3>
+                                  </div>
+                              </div>
+                          </Card>
+                      </Link>
+
+                      <Link href="/dashboard/withdrawal" className="group h-full">
+                          <Card className="relative p-6 sm:p-7 md:p-8 lg:p-10 rounded-2xl cursor-pointer transition-all duration-500 cubic-bezier(0.175, 0.885, 0.32, 1.275) overflow-hidden backdrop-blur-lg border border-white/10 bg-gradient-to-br from-blue-400 to-blue-600 animate-fadeInUp group-hover:-translate-y-3 group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-black/40 h-full">
+                              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 opacity-90 -z-10"></div>
+                              <div className="absolute w-20 h-20 sm:w-24 sm:h-24 bg-white/20 rounded-full blur-2xl top-0 right-0 group-hover:translate-x-6 group-hover:-translate-y-6 transition-all duration-600"></div>
+                              <div className="relative z-10 flex flex-col items-center text-center gap-4 sm:gap-6 h-full">
+                                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/25 rounded-lg sm:rounded-xl backdrop-blur-lg border border-white/30 flex items-center justify-center transition-all duration-500 group-hover:bg-white/35">
+                                      <ArrowUpFromLine className="h-8 w-8 sm:h-10 sm:w-10 text-white" strokeWidth={2} />
+                                  </div>
+                                  <div>
+                                      <h3 className="text-base sm:text-lg md:text-xl lg:text-xl font-bold text-white drop-shadow mb-1 sm:mb-2">Retrait</h3>
+                                  </div>
+                              </div>
+                          </Card>
+                      </Link>
+
+                      <Link href="/dashboard/phones" className="group h-full">
+                          <Card className="relative p-6 sm:p-7 md:p-8 lg:p-10 rounded-2xl cursor-pointer transition-all duration-500 cubic-bezier(0.175, 0.885, 0.32, 1.275) overflow-hidden backdrop-blur-lg border border-white/10 bg-gradient-to-br from-purple-400 to-purple-600 animate-fadeInUp group-hover:-translate-y-3 group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-black/40 h-full">
+                              <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-purple-600 opacity-90 -z-10"></div>
+                              <div className="absolute w-20 h-20 sm:w-24 sm:h-24 bg-white/20 rounded-full blur-2xl top-0 right-0 group-hover:translate-x-6 group-hover:-translate-y-6 transition-all duration-600"></div>
+                              <div className="relative z-10 flex flex-col items-center text-center gap-4 sm:gap-6 h-full">
+                                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/25 rounded-lg sm:rounded-xl backdrop-blur-lg border border-white/30 flex items-center justify-center transition-all duration-500 group-hover:bg-white/35">
+                                      <Smartphone className="h-8 w-8 sm:h-10 sm:w-10 text-white" strokeWidth={2} />
+                                  </div>
+                                  <div>
+                                      <h3 className="text-base sm:text-lg md:text-xl lg:text-xl font-bold text-white drop-shadow mb-1 sm:mb-2">Numéros & IDs</h3>
+                                  </div>
+                              </div>
+                          </Card>
+                      </Link>
+
+                      <Link href="/dashboard/coupons" className="group h-full">
+                          <Card className="relative p-6 sm:p-7 md:p-8 lg:p-10 rounded-2xl cursor-pointer transition-all duration-500 cubic-bezier(0.175, 0.885, 0.32, 1.275) overflow-hidden backdrop-blur-lg border border-white/10 bg-gradient-to-br from-orange-400 to-orange-600 animate-fadeInUp group-hover:-translate-y-3 group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-black/40 h-full">
+                              <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-orange-600 opacity-90 -z-10"></div>
+                              <div className="absolute w-20 h-20 sm:w-24 sm:h-24 bg-white/20 rounded-full blur-2xl top-0 right-0 group-hover:translate-x-6 group-hover:-translate-y-6 transition-all duration-600"></div>
+                              <div className="relative z-10 flex flex-col items-center text-center gap-4 sm:gap-6 h-full">
+                                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/25 rounded-lg sm:rounded-xl backdrop-blur-lg border border-white/30 flex items-center justify-center transition-all duration-500 group-hover:bg-white/35">
+                                      <Ticket className="h-8 w-8 sm:h-10 sm:w-10 text-white" strokeWidth={2} />
+                                  </div>
+                                  <div>
+                                      <h3 className="text-base sm:text-lg md:text-xl lg:text-xl font-bold text-white drop-shadow mb-1 sm:mb-2">Coupons</h3>
+                                  </div>
+                              </div>
+                          </Card>
+                      </Link>
+                  </div>
+              </div>
+
               {/* Recent activity */}
               <div className="space-y-4 sm:space-y-5">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                       <div className="flex items-center gap-3">
-                          <div className="h-8 w-1 bg-primary rounded-full"></div>
                           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Activité récente</h2>
                       </div>
                       <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
@@ -324,69 +305,127 @@ export default function DashboardPage() {
                   ) : (
                       <div className="space-y-3">
                           {recentTransactions.map((transaction) => (
-                              <Card key={transaction.id} className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/30 overflow-hidden">
-                                  <CardContent className="p-4 sm:p-5">
-                                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                          <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0 w-full">
-                                              <div className={`p-2.5 sm:p-3 rounded-2xl shrink-0 transition-transform group-hover:scale-110 ${
+                              <Card key={transaction.id} className="relative overflow-hidden border rounded-2xl sm:rounded-3xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10 cursor-pointer group">
+                                  <CardContent className="p-4 sm:p-6 md:p-7">
+                                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 md:gap-8">
+                                          {/* Left section */}
+                                          <div className="flex items-start gap-3 sm:gap-4 md:gap-5 flex-1 min-w-0 w-full">
+                                              {/* Icon wrapper with border */}
+                                              <div
+                                                className={`w-14 h-14 sm:w-16 md:w-16 shrink-0 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 border-2 ${
                                                   transaction.type_trans === "deposit"
-                                                      ? "bg-deposit/10 text-deposit ring-2 ring-deposit/20"
-                                                      : "bg-withdrawal/10 text-withdrawal ring-2 ring-withdrawal/20"
-                                              }`}>
+                                                    ? "border-deposit shadow-lg shadow-deposit/20"
+                                                    : "border-withdrawal shadow-lg shadow-withdrawal/20"
+                                                }`}
+                                              >
                                                   {transaction.type_trans === "deposit" ? (
-                                                      <ArrowDownToLine className="h-5 w-5" />
+                                                      <ArrowDownToLine className="h-7 w-7 sm:h-8 md:h-8 text-deposit" strokeWidth={2.5} />
                                                   ) : (
-                                                      <ArrowUpFromLine className="h-5 w-5" />
+                                                      <ArrowUpFromLine className="h-7 w-7 sm:h-8 md:h-8 text-withdrawal" strokeWidth={2.5} />
                                                   )}
                                               </div>
-                                              <div className="flex-1 min-w-0 space-y-2">
-                                                  <div className="flex items-center gap-2 flex-wrap">
-                                                      <div className="flex items-center gap-1.5">
-                                                          <h3 className="font-bold text-sm sm:text-base text-foreground">#{transaction.reference}</h3>
-                                                          <Button
-                                                              variant="ghost"
-                                                              size="icon"
-                                                              className="h-6 w-6 rounded-lg hover:bg-muted/80"
-                                                              onClick={(e) => {
-                                                                  e.preventDefault()
-                                                                  e.stopPropagation()
-                                                                  copyReference(transaction.reference)
-                                                              }}
-                                                              title="Copier la référence"
-                                                          >
-                                                              {copiedReference === transaction.reference ? (
-                                                                  <Check className="h-3.5 w-3.5 text-success" />
-                                                              ) : (
-                                                                  <Copy className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-                                                              )}
-                                                          </Button>
+
+                                              {/* Transaction info */}
+                                              <div className="flex-1 min-w-0 space-y-2 sm:space-y-3">
+                                                  {/* Reference and copy button */}
+                                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                                      <h3 className="font-bold text-sm sm:text-base md:text-base text-foreground truncate">
+                                                          #{transaction.reference}
+                                                      </h3>
+                                                      <Button
+                                                          variant="ghost"
+                                                          size="icon"
+                                                          className="h-6 w-6 sm:h-7 md:h-7 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+                                                          onClick={(e) => {
+                                                              e.preventDefault()
+                                                              e.stopPropagation()
+                                                              copyReference(transaction.reference)
+                                                          }}
+                                                          title="Copier la référence"
+                                                      >
+                                                          {copiedReference === transaction.reference ? (
+                                                              <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-green-600" />
+                                                          ) : (
+                                                              <Copy className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-500 group-hover:text-slate-700" />
+                                                          )}
+                                                      </Button>
+                                                  </div>
+
+                                                  {/* Badges */}
+                                                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                                      <div
+                                                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-semibold text-white transition-transform hover:scale-105 ${
+                                                          transaction.type_trans === "deposit"
+                                                            ? "bg-gradient-to-r from-deposit to-deposit/90"
+                                                            : "bg-gradient-to-r from-withdrawal to-withdrawal/90"
+                                                        }`}
+                                                      >
+                                                          {transaction.type_trans === "deposit" ? "Dépôt" : "Retrait"}
                                                       </div>
-                                                      {getTypeBadge(transaction.type_trans)}
                                                       {getStatusBadge(transaction.status)}
                                                   </div>
-                                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                      <span className="font-medium px-2 py-0.5 rounded-md bg-muted/50">{transaction.app_details.name ?? "N/A"}</span>
-                                                      <span>•</span>
-                                                      <span className="truncate">{transaction.phone_number}</span>
+
+                                                  {/* Transaction details */}
+                                                  <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-600 flex-wrap">
+                                                      <div className="flex items-center gap-1.5 font-medium">
+                                                          <CreditCard className="w-4 h-4 text-slate-400" />
+                                                          <span className="text-slate-700 font-semibold">{transaction.app_details.name}</span>
+                                                      </div>
+                                                      <div className="w-1 h-1 bg-slate-300 rounded-full" />
+                                                      <div className="flex items-center gap-1.5 font-medium">
+                                                          <Phone className="w-4 h-4 text-slate-400" />
+                                                          <span className="text-slate-700 font-semibold truncate">+{transaction.phone_number.slice(0,3)} {transaction.phone_number.slice(3)}</span>
+                                                      </div>
+                                                      {transaction.user_app_id && (
+                                                          <>
+                                                              <div className="w-1 h-1 bg-slate-300 rounded-full" />
+                                                              <span className="text-slate-700 font-medium">ID: <span className="font-semibold">{transaction.user_app_id}</span></span>
+                                                          </>
+                                                      )}
                                                   </div>
+
+                                                  {/* Withdrawal code if present */}
+                                                  {transaction.withdriwal_code && (
+                                                      <div className="flex items-center gap-2 text-xs pt-1">
+                                                          <span className="font-medium text-slate-600 shrink-0">Code:</span>
+                                                          <span className="px-2 sm:px-2.5 py-1 rounded-lg bg-primary/10 text-primary font-mono font-medium text-xs truncate">
+                                                              {transaction.withdriwal_code}
+                                                          </span>
+                                                      </div>
+                                                  )}
+
+                                                  {/* Error message if present */}
+                                                  {transaction.error_message && (
+                                                      <p className="text-xs text-red-600 font-medium pt-1">
+                                                          ⚠️ {transaction.error_message}
+                                                      </p>
+                                                  )}
                                               </div>
                                           </div>
-                                          <div className="p-3 text-left sm:text-right shrink-0 w-full sm:w-auto border-t sm:border-t-0 border-border/50 pt-3 sm:pt-0 flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
-                                              <p className="text-xs text-muted-foreground">
+
+                                          {/* Right section - Amount and timestamp */}
+                                          <div className="w-full sm:w-auto shrink-0 flex items-center sm:flex-col justify-between sm:items-end gap-3 sm:gap-2 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-200">
+                                              <p className="text-xs text-slate-500 font-medium whitespace-nowrap">
                                                   {format(new Date(transaction.created_at), "dd MMM à HH:mm", {
                                                       locale: fr,
                                                   })}
                                               </p>
-                                              <p className={`text-lg sm:text-xl font-bold ${
-                                                  transaction.type_trans === "deposit" ? "text-deposit" : "text-withdrawal"
-                                              }`}>
-                                                  {transaction.type_trans === "deposit" ? "+" : "-"}
-                                                  {transaction.amount.toLocaleString("fr-FR", {
-                                                      style: "currency",
-                                                      currency: "XOF",
-                                                      minimumFractionDigits: 0,
-                                                  })}
-                                              </p>
+                                              <div className="flex flex-col items-end gap-0.5 sm:gap-1">
+                                                  <p
+                                                    className={`text-lg sm:text-xl md:text-2xl font-bold transition-all duration-300 ${
+                                                      transaction.type_trans === "deposit"
+                                                        ? "text-deposit"
+                                                        : "text-withdrawal"
+                                                    }`}
+                                                  >
+                                                      {transaction.type_trans === "deposit" ? "+" : "-"}
+                                                      {transaction.amount.toLocaleString("fr-FR", {
+                                                          style: "currency",
+                                                          currency: "XOF",
+                                                          minimumFractionDigits: 0,
+                                                      })}
+                                                  </p>
+                                              </div>
                                           </div>
                                       </div>
                                   </CardContent>

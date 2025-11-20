@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Search, Filter, RefreshCw, ArrowDownToLine, ArrowUpFromLine, Copy, Check, ArrowLeft } from "lucide-react"
+import { Loader2, Search, Filter, RefreshCw, ArrowDownToLine, ArrowUpFromLine, Copy, Check, ArrowLeft, CreditCard, Phone } from "lucide-react"
 import { transactionApi } from "@/lib/api-client"
 import type { Transaction } from "@/lib/types"
 import { toast } from "react-hot-toast"
@@ -156,7 +156,6 @@ export default function TransactionHistoryPage() {
         {/* Filters */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-1 bg-primary rounded-full"></div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Filtres</h2>
           </div>
           <Card className="border-2 hover:border-primary/20 transition-colors">
@@ -240,7 +239,6 @@ export default function TransactionHistoryPage() {
         <div className="space-y-4 sm:space-y-5">
           <div className="flex flex-row items-center justify-between gap-3 sm:gap-0">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-1 bg-primary rounded-full"></div>
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Transactions</h2>
               <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-bold">{totalCount}</span>
             </div>
@@ -272,86 +270,130 @@ export default function TransactionHistoryPage() {
             ) : (
               <div className="space-y-3">
                 {transactions.map((transaction) => (
-                  <Card key={transaction.id} className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/30 overflow-hidden">
-                    <CardContent className="p-4 sm:p-5">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0 w-full">
-                          <div className={`p-2.5 sm:p-3 rounded-2xl shrink-0 transition-transform group-hover:scale-110 ${
-                            transaction.type_trans === "deposit"
-                              ? "bg-deposit/10 text-deposit ring-2 ring-deposit/20"
-                              : "bg-withdrawal/10 text-withdrawal ring-2 ring-withdrawal/20"
-                          }`}>
+                  <Card
+                    key={transaction.id}
+                    className="relative overflow-hidden border rounded-2xl sm:rounded-3xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10 cursor-pointer group"
+                  >
+                    <CardContent>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 md:gap-8">
+                        {/* Left section */}
+                        <div className="flex items-start gap-3 sm:gap-4 md:gap-5 flex-1 min-w-0 w-full">
+                          {/* Icon wrapper with gradient */}
+                          <div
+                            className={`w-14 h-14 sm:w-16 md:w-16 shrink-0 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 border-2 ${
+                              transaction.type_trans === "deposit"
+                                ? "border-deposit shadow-lg shadow-deposit/20"
+                                : "border-withdrawal shadow-lg shadow-withdrawal/20"
+                            }`}
+                          >
                             {transaction.type_trans === "deposit" ? (
-                              <ArrowDownToLine className="h-5 w-5" />
+                              <ArrowDownToLine className="h-7 w-7 sm:h-8 md:h-8 text-deposit" strokeWidth={2.5} />
                             ) : (
-                              <ArrowUpFromLine className="h-5 w-5" />
+                              <ArrowUpFromLine className="h-7 w-7 sm:h-8 md:h-8 text-withdrawal" strokeWidth={2.5} />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0 space-y-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <div className="flex items-center gap-1.5">
-                                <h3 className="font-bold text-sm sm:text-base text-foreground">#{transaction.reference}</h3>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 rounded-lg hover:bg-muted/80"
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    copyReference(transaction.reference)
-                                  }}
-                                  title="Copier la référence"
-                                >
-                                  {copiedReference === transaction.reference ? (
-                                    <Check className="h-3.5 w-3.5 text-success" />
-                                  ) : (
-                                    <Copy className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-                                  )}
-                                </Button>
+
+                          {/* Transaction info */}
+                          <div className="flex-1 min-w-0 space-y-2 sm:space-y-3">
+                            {/* Reference and copy button */}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h3 className="font-bold text-sm sm:text-base md:text-base text-foreground truncate">
+                                #{transaction.reference}
+                              </h3>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 sm:h-7 md:h-7 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  copyReference(transaction.reference)
+                                }}
+                                title="Copier la référence"
+                              >
+                                {copiedReference === transaction.reference ? (
+                                  <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-green-600" />
+                                ) : (
+                                  <Copy className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-500 group-hover:text-slate-700" />
+                                )}
+                              </Button>
+                            </div>
+
+                            {/* Badges */}
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                              <div
+                                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-semibold text-white transition-transform hover:scale-105 ${
+                                  transaction.type_trans === "deposit"
+                                    ? "bg-gradient-to-r from-deposit to-deposit/90"
+                                    : "bg-gradient-to-r from-withdrawal to-withdrawal/90"
+                                }`}
+                              >
+                                {transaction.type_trans === "deposit" ? "Dépôt" : "Retrait"}
                               </div>
-                              {getTypeBadge(transaction.type_trans)}
                               {getStatusBadge(transaction.status)}
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                              <span className="font-medium px-2 py-0.5 rounded-md bg-muted/50">{transaction.app}</span>
-                              <span>•</span>
-                              <span className="truncate">{transaction.phone_number}</span>
+
+                            {/* Transaction details */}
+                            <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-600 flex-wrap">
+                              <div className="flex items-center gap-1.5 font-medium">
+                                <CreditCard className="w-4 h-4 text-slate-400" />
+                                <span className="text-slate-700 font-semibold">{transaction.app_details.name}</span>
+                              </div>
+                              <div className="w-1 h-1 bg-slate-300 rounded-full" />
+                              <div className="flex items-center gap-1.5 font-medium">
+                                <Phone className="w-4 h-4 text-slate-400" />
+                                <span className="text-slate-700 font-semibold truncate">+{transaction.phone_number.slice(0,3)} {transaction.phone_number.slice(3)}</span>
+                              </div>
                               {transaction.user_app_id && (
                                 <>
-                                  <span>•</span>
-                                  <span className="truncate">ID: {transaction.user_app_id}</span>
+                                  <div className="w-1 h-1 bg-slate-300 rounded-full" />
+                                  <span className="text-slate-700 font-medium">ID: <span className="font-semibold">{transaction.user_app_id}</span></span>
                                 </>
                               )}
                             </div>
+
+                            {/* Withdrawal code if present */}
                             {transaction.withdriwal_code && (
-                              <div className="flex items-center gap-2 text-xs">
-                                <span className="font-medium text-muted-foreground">Code:</span>
-                                <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary font-mono">{transaction.withdriwal_code}</span>
+                              <div className="flex items-center gap-2 text-xs pt-1">
+                                <span className="font-medium text-slate-600 shrink-0">Code:</span>
+                                <span className="px-2 sm:px-2.5 py-1 rounded-lg bg-primary/10 text-primary font-mono font-medium text-xs truncate">
+                                  {transaction.withdriwal_code}
+                                </span>
                               </div>
                             )}
+
+                            {/* Error message if present */}
                             {transaction.error_message && (
-                              <p className="text-xs text-destructive font-medium">
+                              <p className="text-xs text-red-600 font-medium pt-1">
                                 ⚠️ {transaction.error_message}
                               </p>
                             )}
                           </div>
                         </div>
-                        <div className="p-3 text-left sm:text-right shrink-0 w-full sm:w-auto border-t sm:border-t-0 border-border/50 pt-3 sm:pt-0 flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
-                          <p className="text-xs text-muted-foreground">
+
+                        {/* Right section - Amount and timestamp */}
+                        <div className="w-full sm:w-auto shrink-0 flex items-center sm:flex-col justify-between sm:items-end gap-3 sm:gap-2 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-200">
+                          <p className="text-xs text-slate-500 font-medium whitespace-nowrap">
                             {format(new Date(transaction.created_at), "dd MMM à HH:mm", {
                               locale: fr,
                             })}
                           </p>
-                          <p className={`text-lg sm:text-xl font-bold ${
-                            transaction.type_trans === "deposit" ? "text-deposit" : "text-withdrawal"
-                          }`}>
-                            {transaction.type_trans === "deposit" ? "+" : "-"}
-                            {transaction.amount.toLocaleString("fr-FR", {
-                              style: "currency",
-                              currency: "XOF",
-                              minimumFractionDigits: 0,
-                            })}
-                          </p>
+                          <div className="flex flex-col items-end gap-0.5 sm:gap-1">
+                            <p
+                              className={`text-lg sm:text-xl md:text-2xl font-bold transition-all duration-300 ${
+                                transaction.type_trans === "deposit"
+                                  ? "text-deposit"
+                                  : "text-withdrawal"
+                              }`}
+                            >
+                              {transaction.type_trans === "deposit" ? "+" : "-"}
+                              {transaction.amount.toLocaleString("fr-FR", {
+                                style: "currency",
+                                currency: "XOF",
+                                minimumFractionDigits: 0,
+                              })}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </CardContent>

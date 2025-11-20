@@ -461,42 +461,47 @@ export default function PhonesPage() {
                  <div>
                      <div className="space-y-3 sm:hidden">
                          {userPhones.map((phone) => (
-                             <Card key={phone.id} className="border-2 hover:shadow-md transition-shadow">
-                                 <CardContent className="p-4">
+                             <Card key={phone.id} className="relative overflow-hidden border rounded-2xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10 cursor-pointer group">
+                                 <CardContent className="p-4 pl-5">
                                      <div className="space-y-3">
+                                         {/* Phone icon and number */}
                                          <div className="flex items-start gap-3">
-                                             <div className="p-2 rounded-lg bg-primary/10 shrink-0">
-                                                 <Phone className="h-4 w-4 text-primary" />
+                                             <div className="w-12 h-12 shrink-0 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110 border-2 border-primary shadow-lg shadow-primary/10">
+                                                 <Phone className="h-6 w-6 text-primary" strokeWidth={2} />
                                              </div>
                                              <div className="flex-1 min-w-0">
-                                                 <p className="text-xs text-muted-foreground mb-1">Numéro de téléphone</p>
-                                                 <p className="font-semibold text-sm truncate">{phone.phone}</p>
+                                                 <p className="text-xs text-muted-foreground mb-1 font-medium">Numéro</p>
+                                                 <p className="font-bold text-sm text-foreground">+{phone.phone.slice(0,3)} {phone.phone.slice(3)}</p>
                                              </div>
                                          </div>
-                                         <div className="flex items-center gap-2 pl-11">
-                                             <p className="text-xs text-muted-foreground">Réseau:</p>
-                                             <Badge variant="secondary" className="text-xs">
-                                                 {networks.find((n) => n.id === phone.network)?.name || "Inconnu"}
+
+                                         {/* Network badge */}
+                                         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5">
+                                             <p className="text-xs text-muted-foreground font-medium shrink-0">Réseau:</p>
+                                             <Badge variant="secondary" className="text-xs font-semibold">
+                                                 {networks.find((n) => n.id === phone.network)?.public_name || "Inconnu"}
                                              </Badge>
                                          </div>
-                                         <div className="flex justify-start gap-2 pt-3 border-t">
+
+                                         {/* Action buttons */}
+                                         <div className="flex gap-2 pt-2">
                                              <Button
-                                                 variant="ghost"
+                                                 variant="outline"
                                                  size="sm"
                                                  onClick={() => openEditPhoneDialog(phone)}
-                                                 className="hover:bg-primary/10 hover:text-primary"
+                                                 className="flex-1 rounded-lg border-2 hover:border-primary/50 hover:bg-primary/5 transition-colors"
                                              >
                                                  <Edit className="h-4 w-4 mr-1.5" />
-                                                 <span className="text-xs">Modifier</span>
+                                                 <span className="text-xs font-medium">Modifier</span>
                                              </Button>
                                              <Button
-                                                 variant="ghost"
+                                                 variant="outline"
                                                  size="sm"
                                                  onClick={() => setDeleteTarget({ type: "phone", id: phone.id })}
-                                                 className="hover:bg-destructive/10 hover:text-destructive"
+                                                 className="flex-1 rounded-lg border-2 border-destructive/30 hover:border-destructive/50 hover:bg-destructive/5 transition-colors text-destructive"
                                              >
                                                  <Trash2 className="h-4 w-4 mr-1.5" />
-                                                 <span className="text-xs">Supprimer</span>
+                                                 <span className="text-xs font-medium">Supprimer</span>
                                              </Button>
                                          </div>
                                      </div>
@@ -517,10 +522,10 @@ export default function PhonesPage() {
                                  <TableBody>
                                      {userPhones.map((phone) => (
                                          <TableRow key={phone.id} className="hover:bg-muted/30">
-                                             <TableCell className="font-semibold">{phone.phone}</TableCell>
+                                             <TableCell className="font-semibold">+{phone.phone.slice(0,3)} {phone.phone.slice(3)}</TableCell>
                                              <TableCell>
                                                  <Badge variant="secondary" className="font-medium">
-                                                     {networks.find((n) => n.id === phone.network)?.name || "Inconnu"}
+                                                     {networks.find((n) => n.id === phone.network)?.public_name || "Inconnu"}
                                                  </Badge>
                                              </TableCell>
                                              <TableCell className="text-right">
@@ -755,42 +760,47 @@ export default function PhonesPage() {
                   <div>
                       <div className="space-y-3 sm:hidden">
                           {userAppIds.map((appId, index) => (
-                              <Card key={`appId-mobile-${appId.id}-${appId.app_name || 'unknown'}-${index}`} className="border-2 hover:shadow-md transition-shadow">
-                                  <CardContent className="p-4">
+                              <Card key={`appId-mobile-${appId.id}-${appId.app_name || 'unknown'}-${index}`} className="relative overflow-hidden border rounded-2xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10 cursor-pointer group">
+                                  <CardContent className="p-4 pl-5">
                                       <div className="space-y-3">
+                                          {/* App ID icon and value */}
                                           <div className="flex items-start gap-3">
-                                              <div className="p-2 rounded-lg bg-primary/10 shrink-0">
-                                                  <Smartphone className="h-4 w-4 text-primary" />
+                                              <div className="w-12 h-12 shrink-0 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110 border-2 border-primary shadow-lg shadow-primary/10">
+                                                  <Smartphone className="h-6 w-6 text-primary" strokeWidth={2} />
                                               </div>
                                               <div className="flex-1 min-w-0">
-                                                  <p className="text-xs text-muted-foreground mb-1">ID de pari</p>
-                                                  <p className="font-semibold text-sm truncate">{appId.user_app_id}</p>
+                                                  <p className="text-xs text-muted-foreground mb-1 font-medium">ID de pari</p>
+                                                  <p className="font-bold text-sm text-foreground truncate">{appId.user_app_id}</p>
                                               </div>
                                           </div>
-                                          <div className="flex items-center gap-2 pl-11">
-                                              <p className="text-xs text-muted-foreground">Plateforme:</p>
-                                              <Badge variant="secondary" className="text-xs">
+
+                                          {/* Platform badge */}
+                                          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5">
+                                              <p className="text-xs text-muted-foreground font-medium shrink-0">Plateforme:</p>
+                                              <Badge variant="secondary" className="text-xs font-semibold">
                                                   {platforms.find((p) => p.id === appId.app_name)?.name || "Inconnu"}
                                               </Badge>
                                           </div>
-                                          <div className="flex justify-start gap-2 pt-3 border-t">
+
+                                          {/* Action buttons */}
+                                          <div className="flex gap-2 pt-2">
                                               <Button
-                                                  variant="ghost"
+                                                  variant="outline"
                                                   size="sm"
                                                   onClick={() => openEditAppIdDialog(appId)}
-                                                  className="hover:bg-primary/10 hover:text-primary"
+                                                  className="flex-1 rounded-lg border-2 hover:border-primary/50 hover:bg-primary/5 transition-colors"
                                               >
                                                   <Edit className="h-4 w-4 mr-1.5" />
-                                                  <span className="text-xs">Modifier</span>
+                                                  <span className="text-xs font-medium">Modifier</span>
                                               </Button>
                                               <Button
-                                                  variant="ghost"
+                                                  variant="outline"
                                                   size="sm"
                                                   onClick={() => setDeleteTarget({ type: "appId", id: appId.id })}
-                                                  className="hover:bg-destructive/10 hover:text-destructive"
+                                                  className="flex-1 rounded-lg border-2 border-destructive/30 hover:border-destructive/50 hover:bg-destructive/5 transition-colors text-destructive"
                                               >
                                                   <Trash2 className="h-4 w-4 mr-1.5" />
-                                                  <span className="text-xs">Supprimer</span>
+                                                  <span className="text-xs font-medium">Supprimer</span>
                                               </Button>
                                           </div>
                                       </div>

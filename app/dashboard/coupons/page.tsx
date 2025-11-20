@@ -98,7 +98,6 @@ export default function CouponsPage() {
                 <div className="space-y-4 sm:space-y-5">
                     <div className="flex flex-row items-center justify-between gap-3 sm:gap-0">
                         <div className="flex items-center gap-3">
-                            <div className="h-8 w-1 bg-primary rounded-full"></div>
                             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Coupons</h2>
                             <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-bold">
                                 {coupons.length}

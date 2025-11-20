@@ -118,8 +118,10 @@
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
-  --color-deposit: #059669;
+  --color-deposit: #10B981;
   --color-withdrawal: #2563eb;
+    --color-phone: #FF6B35;
+    --color-bonus: #EC4899;
 
   --radius: 0.5rem;
 }
@@ -212,12 +214,25 @@
   .text-withdrawal {
     color: var(--color-withdrawal);
   }
+    .text-phone {
+        color: var(--color-phone);
+    }
+
+    .text-bonus {
+        color: var(--color-bonus);
+    }
   .bg-deposit {
     background-color: var(--color-deposit);
   }
   .bg-withdrawal {
     background-color: var(--color-withdrawal);
   }
+    .bg-phone {
+        background-color: var(--color-phone);
+    }
+    .bg-bonus {
+        background-color: var(--color-bonus);
+    }
   .border-deposit {
     border-color: var(--color-deposit);
   }
