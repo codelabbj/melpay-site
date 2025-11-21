@@ -85,6 +85,7 @@ export interface UserAppId {
   user: string | null
   telegram_user: number
   app_name: string
+    app_details: Platform
 }
 
 export interface Transaction {

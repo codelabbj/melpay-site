@@ -80,7 +80,13 @@ export const platformApi = {
 }
 
 export const userAppIdApi = {
-  getByPlatform: async (bet_app: string) => {
+
+    getAll: async () => {
+      const {data} = await api.get<UserAppId[]>("/mobcash/user-app-id/")
+      return data
+    },
+
+    getByPlatform: async (bet_app: string) => {
     const { data } = await api.get<UserAppId[]>(`/mobcash/user-app-id?bet_app=${bet_app}`)
     return data
   },
@@ -88,7 +94,7 @@ export const userAppIdApi = {
   create: async (user_app_id: string, app: string) => {
     const { data } = await api.post<UserAppId>("/mobcash/user-app-id/", {
       user_app_id,
-      app,
+      app_name: app,
     })
     return data
   },

@@ -53,7 +53,7 @@ export function DepositStepper({ currentStep, totalSteps, type = "deposit", clas
 
             {step < totalSteps && (
               <div className={cn(
-                "flex-1 h-1 mx-4 transition-colors duration-300",
+                "flex-1 h-1 mx-4 transition-colors duration-300 self-center",
                 isCompleted ? (type === "deposit" ? "bg-deposit" : "bg-withdrawal") : "bg-muted"
               )} />
             )}

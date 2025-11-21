@@ -84,7 +84,7 @@ export default function PhonesPage() {
 
   useEffect(() => {
     loadData()
-  }, [tab])
+  }, [])
 
   // Refetch data when the page gains focus to ensure fresh data
   useEffect(() => {
@@ -97,48 +97,22 @@ export default function PhonesPage() {
 
   const loadData = async () => {
     setIsLoading(true)
-      let platformsData : Platform[] =[]
-      try{
-        platformsData = await platformApi.getAll()
-          setPlatforms(platformsData)
-      }catch(error){
+      try {
+          const [phonesData, networksData] = await Promise.all([
+              phoneApi.getAll(),
+              networkApi.getAll(),
+          ])
+          setUserPhones(phonesData)
+          setNetworks(networksData)
+          const userAppIdData = await userAppIdApi.getAll()
+          setUserAppIds(userAppIdData)
+          const platformData = await platformApi.getAll()
+          setPlatforms(platformData)
+      }catch (error) {
           console.error("Failed to load data:", error)
-      }finally {
-          if (tab =="appIds") {
-              try {
-                  // Load all app IDs for all platforms
-                  const allAppIds: UserAppId[] = []
-                  for (const platform of platforms) {
-                      try {
-                          const appIds = await userAppIdApi.getByPlatform(platform.id.toString())
-                          allAppIds.push(...appIds)
-                      } catch (error) {
-                          console.error(`Failed to load app IDs for platform ${platform.id}:`, error)
-                      }
-                  }
-                  setUserAppIds(allAppIds)
-              } catch (error) {
-                  console.error("Failed to load data:", error)
-              } finally {
-                  setIsLoading(false)
-              }
-          }else{
-              try {
-                  const [phonesData, networksData] = await Promise.all([
-                      phoneApi.getAll(),
-                      networkApi.getAll(),
-                  ])
-                  setUserPhones(phonesData)
-                  setNetworks(networksData)
-              } catch (error) {
-                  console.error("Failed to load data:", error)
-              } finally {
-                  setIsLoading(false)
-              }
-          }
+      } finally {
+          setIsLoading(false)
       }
-
-
   }
 
   const handlePhoneSubmit = async (data: PhoneFormData) => {
@@ -179,14 +153,9 @@ export default function PhonesPage() {
   const handleAppIdSubmit = async (data: AppIdFormData) => {
     setIsSubmitting(true)
     try {
-      if (editingAppId) {
-        await userAppIdApi.update(editingAppId.id, data.user_app_id, data.app)
-        toast.success("ID de pari modifié avec succès!")
-      } else {
         const response = await userAppIdApi.search(data.user_app_id, data.app)
-          setBetId(response)
-          setAppId({user_app_id:data.user_app_id, app:data.app})
-      }
+        setBetId(response)
+        setAppId({user_app_id:data.user_app_id, app:data.app})
       appIdForm.reset()
       setEditingAppId(null)
       loadData()
@@ -202,12 +171,19 @@ export default function PhonesPage() {
 
       setIsSubmitting(true)
       try {
-          await userAppIdApi.create(appId.user_app_id, appId.app)
-          toast.success("ID de pari modifié avec succès!")
-          setIsAppIdDialogOpen(false)
+          if(editingAppId) {
+              await userAppIdApi.update(editingAppId.id, appId.user_app_id, appId.app)
+              toast.success("ID de pari modifié avec succès!")
+              setIsAppIdDialogOpen(false)
+          }else{
+              await userAppIdApi.create(appId.user_app_id, appId.app)
+              toast.success("ID de pari modifié avec succès!")
+              setIsAppIdDialogOpen(false)
+          }
       }catch (error) {
           console.error("App ID operation error:", error)
       } finally {
+          loadData()
           setIsSubmitting(false)
           setBetId(null)
           setAppId(null)
@@ -254,7 +230,7 @@ export default function PhonesPage() {
     setEditingAppId(appId)
     appIdForm.reset({
       user_app_id: appId.user_app_id,
-      app: appId.app_name?.toString(),
+      app: appId.app_details.id,
     })
     setIsAppIdDialogOpen(true)
   }
@@ -581,7 +557,13 @@ export default function PhonesPage() {
                   <Dialog open={isAppIdDialogOpen} onOpenChange={setIsAppIdDialogOpen}>
                       <DialogTrigger asChild>
                           <Button
-                              onClick={() => setEditingAppId(null)}
+                              onClick={() =>{
+                                  setEditingAppId(null)
+                                  appIdForm.reset({
+                                      user_app_id: undefined,
+                                      app: undefined,
+                                  })
+                              }}
                               size="sm"
                               className="w-auto shadow-sm hover:shadow-md transition-shadow"
                           >
@@ -655,7 +637,7 @@ export default function PhonesPage() {
                                               <div className="flex-1">
                                                   <h3 className="font-bold text-base mb-2">Compte introuvable ou devise non supportée</h3>
                                                   <p className="text-sm text-muted-foreground leading-relaxed">
-                                                      Aucun compte n'a été trouvé avec l'ID <Badge variant="outline" className="mx-1">{appId?.user_app_id}</Badge> ou votre compte n'est pas configuré en Franc CFA (XOF - Afrique de l'Ouest). Assurez-vous que l'identifiant est correct et que votre compte est bien rattaché à la zone XOF, puis réessayez.
+                                                      Aucun compte n'a été trouvé avec l'ID <Badge variant="outline" className="mx-1">{appId?.user_app_id}</Badge>. Assurez-vous que l'identifiant est correct, puis réessayez.
                                                   </p>
                                               </div>
                                           </div>
@@ -778,7 +760,7 @@ export default function PhonesPage() {
                                           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5">
                                               <p className="text-xs text-muted-foreground font-medium shrink-0">Plateforme:</p>
                                               <Badge variant="secondary" className="text-xs font-semibold">
-                                                  {platforms.find((p) => p.id === appId.app_name)?.name || "Inconnu"}
+                                                  {appId.app_details.name===""?"Inconnu":appId.app_details.name}
                                               </Badge>
                                           </div>
 
@@ -824,7 +806,7 @@ export default function PhonesPage() {
                                               <TableCell className="font-semibold">{appId.user_app_id}</TableCell>
                                               <TableCell>
                                                   <Badge variant="secondary" className="font-medium">
-                                                      {platforms.find((p) => p.id === appId.app_name)?.name || "Inconnu"}
+                                                      {appId.app_details.name===""?"Inconnu":appId.app_details.name}
                                                   </Badge>
                                               </TableCell>
                                               <TableCell className="text-right">
@@ -872,8 +854,8 @@ export default function PhonesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+            <AlertDialogCancel className="hover:bg-primary/10">Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>

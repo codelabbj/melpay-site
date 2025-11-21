@@ -48,7 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const userInitials = `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`.toUpperCase()
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-background relative overflow-hidden">
       {/* Animated background gradient orbs */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-0 -left-4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
@@ -198,7 +198,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* Main content */}
-      <main className="container mx-auto px-4 py-8 relative z-20">{children}</main>
+      <main className="flex-1 container mx-auto px-4 py-8 relative z-20">{children}</main>
 
       {/* Footer */}
       <footer className="w-full bg-background relative z-10 py-6 sm:py-8">

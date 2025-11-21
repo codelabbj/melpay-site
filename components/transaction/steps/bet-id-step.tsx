@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Loader2, Plus, Edit, Trash2 } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Loader2, Plus, Edit, Trash2, AlertCircle } from "lucide-react"
 import { userAppIdApi } from "@/lib/api-client"
-import type { UserAppId, Platform } from "@/lib/types"
+import type { UserAppId, Platform, BetId } from "@/lib/types"
 import { toast } from "react-hot-toast"
 import {
     AlertDialog,
@@ -26,17 +26,18 @@ interface BetIdStepProps {
   onNext: () => void
 }
 
-export function BetIdStep({ selectedPlatform, selectedBetId, onSelect, onNext }: BetIdStepProps) {
+export function BetIdStep({ selectedPlatform, selectedBetId, onSelect }: BetIdStepProps) {
   const [betIds, setBetIds] = useState<UserAppId[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [editingBetId, setEditingBetId] = useState<UserAppId | null>(null)
   const [newBetId, setNewBetId] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-    const [deleteBetId, setDeleteBetId] = useState<UserAppId | null>(null)
-    const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteBetId, setDeleteBetId] = useState<UserAppId | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [betId, setBetId] = useState<BetId | null>(null)
 
   useEffect(() => {
     if (selectedPlatform) {
@@ -58,42 +59,43 @@ export function BetIdStep({ selectedPlatform, selectedBetId, onSelect, onNext }:
     }
   }
 
-  const handleAddBetId = async () => {
+  const handleSearchBetId = async () => {
     if (!newBetId.trim() || !selectedPlatform) return
-    
+
     setIsSubmitting(true)
     try {
-      const newBetIdData = await userAppIdApi.create(newBetId.trim(), selectedPlatform.id)
-      setBetIds(prev => [...prev, newBetIdData])
-      setNewBetId("")
-      setIsAddDialogOpen(false)
-      toast.success("ID de pari ajouté avec succès")
+      const response = await userAppIdApi.search(newBetId.trim(), selectedPlatform.id.toString())
+      setBetId(response)
     } catch (error) {
-      toast.error("Erreur lors de l'ajout de l'ID de pari")
+      console.error("Bet ID search error:", error)
+      toast.error("Erreur lors de la recherche de l'ID de pari")
+      setBetId(null)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleEditBetId = async () => {
-    if (!newBetId.trim() || !editingBetId || !selectedPlatform) return
-    
+  const handleConfirmBetId = async () => {
+    if (!newBetId.trim() || !selectedPlatform) return
+
     setIsSubmitting(true)
     try {
-      const updatedBetId = await userAppIdApi.update(
-        editingBetId.id,
-        newBetId.trim(),
-        selectedPlatform.id
-      )
-      setBetIds(prev => prev.map(betId => 
-        betId.id === editingBetId.id ? updatedBetId : betId
-      ))
+      if (editingBetId) {
+        await userAppIdApi.update(editingBetId.id, newBetId.trim(), selectedPlatform.id.toString())
+        toast.success("ID de pari modifié avec succès!")
+      } else {
+        await userAppIdApi.create(newBetId.trim(), selectedPlatform.id.toString())
+        toast.success("ID de pari ajouté avec succès!")
+      }
       setNewBetId("")
       setEditingBetId(null)
+      setBetId(null)
+      setIsAddDialogOpen(false)
       setIsEditDialogOpen(false)
-      toast.success("ID de pari modifié avec succès")
+      await fetchBetIds()
     } catch (error) {
-      toast.error("Erreur lors de la modification de l'ID de pari")
+      console.error("Bet ID confirmation error:", error)
+      toast.error("Erreur lors de l'opération")
     } finally {
       setIsSubmitting(false)
     }
@@ -236,79 +238,153 @@ export function BetIdStep({ selectedPlatform, selectedBetId, onSelect, onNext }:
         </CardContent>
       </Card>
 
-      {/* Add Bet ID Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent>
+      {/* Add/Edit Bet ID Dialog with Search Flow */}
+      <Dialog open={isAddDialogOpen || isEditDialogOpen} onOpenChange={(open) => {
+        setIsAddDialogOpen(open)
+        setIsEditDialogOpen(open)
+        if (!open) {
+          setNewBetId("")
+          setEditingBetId(null)
+          setBetId(null)
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Ajouter un ID de pari</DialogTitle>
+            <DialogTitle>{editingBetId ? "Modifier l'ID de pari" : "Ajouter un ID de pari"}</DialogTitle>
             <DialogDescription>
-              Entrez votre ID de compte pour {selectedPlatform.name}
+              {editingBetId ? "Modifiez votre ID de pari pour " : "Ajoutez votre ID de compte pour "}{selectedPlatform.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="betId">ID de pari</Label>
-              <Input
-                id="betId"
-                value={newBetId}
-                onChange={(e) => setNewBetId(e.target.value)}
-                placeholder="Entrez votre ID de pari"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleAddBetId} disabled={!newBetId.trim() || isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Ajout...
-                </>
-              ) : (
-                "Ajouter"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      {/* Edit Bet ID Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Modifier l'ID de pari</DialogTitle>
-            <DialogDescription>
-              Modifiez votre ID de compte pour {selectedPlatform.name}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="editBetId">ID de pari</Label>
-              <Input
-                id="editBetId"
-                value={newBetId}
-                onChange={(e) => setNewBetId(e.target.value)}
-                placeholder="Entrez votre ID de pari"
-              />
+          {betId ? (
+            betId.CurrencyId === 27 ? (
+              <div className="space-y-4">
+                <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4 space-y-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></div>
+                    <h3 className="font-bold text-base">ID de pari trouvé</h3>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between py-2 border-b border-border/50">
+                      <span className="text-muted-foreground font-medium">ID de pari:</span>
+                      <span className="font-bold">{betId.UserId}</span>
+                    </div>
+                    <div className="flex items-center justify-between py-2 border-b border-border/50">
+                      <span className="text-muted-foreground font-medium">Nom d'utilisateur:</span>
+                      <span className="font-bold">{betId.Name}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setNewBetId("")
+                      setEditingBetId(null)
+                      setBetId(null)
+                      setIsAddDialogOpen(false)
+                      setIsEditDialogOpen(false)
+                    }}
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="default"
+                    className="flex-1"
+                    onClick={handleConfirmBetId}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Confirmation...
+                      </>
+                    ) : (
+                      "Confirmer"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="rounded-lg border-2 border-destructive/20 bg-destructive/5 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-full bg-destructive/10 shrink-0">
+                      <AlertCircle className="h-5 w-5 text-destructive" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-base mb-2">Compte introuvable ou devise non supportée</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Aucun compte n'a été trouvé avec l'ID <Badge variant="outline" className="mx-1">{newBetId}</Badge>. Assurez-vous que l'identifiant est correct, puis réessayez.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setNewBetId("")
+                    setEditingBetId(null)
+                    setBetId(null)
+                    setIsAddDialogOpen(false)
+                    setIsEditDialogOpen(false)
+                  }}
+                >
+                  Annuler
+                </Button>
+              </div>
+            )
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="betId">ID de pari</Label>
+                <Input
+                  id="betId"
+                  type="text"
+                  value={newBetId}
+                  onChange={(e) => setNewBetId(e.target.value)}
+                  placeholder="Votre ID sur la plateforme"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setNewBetId("")
+                    setEditingBetId(null)
+                    setBetId(null)
+                    setIsAddDialogOpen(false)
+                    setIsEditDialogOpen(false)
+                  }}
+                  className="flex-1"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSearchBetId}
+                  disabled={!newBetId.trim() || isSubmitting}
+                  className="flex-1"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Recherche...
+                    </>
+                  ) : (
+                    "Rechercher"
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleEditBetId} disabled={!newBetId.trim() || isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Modification...
-                </>
-              ) : (
-                "Modifier"
-              )}
-            </Button>
-          </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
 
