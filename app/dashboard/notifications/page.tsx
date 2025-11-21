@@ -49,7 +49,7 @@ export default function NotificationsPage() {
       setPage(pageNum);
     } catch (error) {
       console.error('Error fetching notifications:', error);
-      toast.error('Failed to load notifications');
+      toast.error('Impossible de charger les notifications');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -182,8 +182,8 @@ export default function NotificationsPage() {
         notif.id === notificationId ? { ...notif, is_read: true } : notif
       );
       localStorage.setItem('fcm_notifications', JSON.stringify(updated));
-      
-      toast.success('Notification marked as read');
+
+      toast.success('Notification marquée comme lue');
       return;
     }
 
@@ -195,10 +195,10 @@ export default function NotificationsPage() {
           notif.id === notificationId ? { ...notif, is_read: true } : notif
         )
       );
-      toast.success('Notification marked as read');
+      toast.success('Notification marquée comme lue');
     } catch (error) {
       console.error('Error marking notification as read:', error);
-      toast.error('Failed to update notification');
+      toast.error('Impossible de mettre à jour la notification');
     }
   };
 
@@ -235,11 +235,9 @@ export default function NotificationsPage() {
               className="flex items-center gap-2"
             >
                 <ArrowLeft className="h-4 w-4" />
-                Retour
             </Button>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Bell className="h-6 w-6" />
                 <h1 className="text-3xl font-bold">Notifications</h1>
               </div>
               <p className="text-muted-foreground">

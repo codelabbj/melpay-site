@@ -92,7 +92,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-300 relative"
                 asChild
               >
-                <Link href="/notifications">
+                <Link href="/dashboard/notifications">
                   <Bell className="h-5 w-5" />
                   <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full animate-pulse"></span>
                 </Link>
