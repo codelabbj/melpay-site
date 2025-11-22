@@ -355,7 +355,10 @@ export default function DepositPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsMoovUSSDDialogOpen(false)}
+                onClick={() => {
+                    setIsMoovUSSDDialogOpen(false)
+                    router.push("/dashboard")
+                }}
                 className="w-full sm:w-auto"
               >
                 Fermer

@@ -328,28 +328,54 @@ export default function PhonesPage() {
                               </DialogDescription>
                           </DialogHeader>
                           <form onSubmit={phoneForm.handleSubmit(handlePhoneSubmit)} className="space-y-4">
-                              <div className="space-y-2">
-                                  <Label htmlFor="country">Pays</Label>
-                                  <Select
-                                      onValueChange={(value) => phoneForm.setValue("country", value)}
-                                      defaultValue={editingPhone ? phoneForm.getValues("country") : "225"}
-                                      disabled={isSubmitting}
-                                  >
-                                      <SelectTrigger id="country">
-                                          <SelectValue placeholder="Sélectionnez votre pays" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                          {COUNTRIES.map((country) => (
-                                              <SelectItem key={country.code} value={country.code}>
-                                                  {country.name}
-                                              </SelectItem>
-                                          ))}
-                                      </SelectContent>
-                                  </Select>
-                                  {phoneForm.formState.errors.country && (
-                                      <p className="text-sm text-destructive">{phoneForm.formState.errors.country.message}</p>
-                                  )}
+                              <div className="flex gap-2 w-full">
+                                  <div className="space-y-2 w-full">
+                                      <Label htmlFor="network">Réseau mobile</Label>
+                                      <Select
+                                          onValueChange={(value) => phoneForm.setValue("network", Number.parseInt(value))}
+                                          defaultValue={editingPhone?.network.toString()}
+                                          disabled={isSubmitting}
+                                      >
+                                          <SelectTrigger id="network" className="w-full">
+                                              <SelectValue placeholder="Sélectionnez un réseau" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                              {networks.map((network) => (
+                                                  <SelectItem key={network.id} value={network.id.toString()}>
+                                                      {network.public_name}
+                                                  </SelectItem>
+                                              ))}
+                                          </SelectContent>
+                                      </Select>
+                                      {phoneForm.formState.errors.network && (
+                                          <p className="text-sm text-destructive">{phoneForm.formState.errors.network.message}</p>
+                                      )}
+                                  </div>
+
+                                  <div className="space-y-2 w-full">
+                                      <Label htmlFor="country">Pays</Label>
+                                      <Select
+                                          onValueChange={(value) => phoneForm.setValue("country", value)}
+                                          defaultValue={editingPhone ? phoneForm.getValues("country") : "225"}
+                                          disabled={isSubmitting}
+                                      >
+                                          <SelectTrigger id="country" className="w-full">
+                                              <SelectValue placeholder="Sélectionnez votre pays" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                              {COUNTRIES.map((country) => (
+                                                  <SelectItem key={country.code} value={country.code}>
+                                                      {country.name}
+                                                  </SelectItem>
+                                              ))}
+                                          </SelectContent>
+                                      </Select>
+                                      {phoneForm.formState.errors.country && (
+                                          <p className="text-sm text-destructive">{phoneForm.formState.errors.country.message}</p>
+                                      )}
+                                  </div>
                               </div>
+
 
                               <div className="space-y-2">
                                   <Label htmlFor="phone">Numéro de téléphone</Label>
@@ -362,29 +388,6 @@ export default function PhonesPage() {
                                   />
                                   {phoneForm.formState.errors.phone && (
                                       <p className="text-sm text-destructive">{phoneForm.formState.errors.phone.message}</p>
-                                  )}
-                              </div>
-
-                              <div className="space-y-2">
-                                  <Label htmlFor="network">Réseau mobile</Label>
-                                  <Select
-                                      onValueChange={(value) => phoneForm.setValue("network", Number.parseInt(value))}
-                                      defaultValue={editingPhone?.network.toString()}
-                                      disabled={isSubmitting}
-                                  >
-                                      <SelectTrigger>
-                                          <SelectValue placeholder="Sélectionnez un réseau" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                          {networks.map((network) => (
-                                              <SelectItem key={network.id} value={network.id.toString()}>
-                                                  {network.public_name}
-                                              </SelectItem>
-                                          ))}
-                                      </SelectContent>
-                                  </Select>
-                                  {phoneForm.formState.errors.network && (
-                                      <p className="text-sm text-destructive">{phoneForm.formState.errors.network.message}</p>
                                   )}
                               </div>
 

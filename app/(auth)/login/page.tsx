@@ -182,7 +182,15 @@ export default function LoginPage() {
                       {errors.password.message}
                     </p>
                   )}
+                    <Link
+                        href="/forgot-password"
+                        className="text-primary underline hover:text-primary/80 font-semibold transition-colors"
+                    >
+                        Mot de passe oublié ?
+                    </Link>
                 </div>
+
+
 
                 <Button
                   type="submit"
