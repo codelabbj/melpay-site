@@ -460,7 +460,7 @@ export default function DashboardPage() {
                           className="w-full justify-start gap-3 h-auto px-3 py-3 rounded-lg hover:bg-green-500/10 transition-all duration-200 group"
                           onClick={() => {
                               // Replace with your WhatsApp number (format: country code + number without + or spaces)
-                              window.open("https://wa.me/22912345678", "_blank")
+                              window.open("https://wa.me/22393569345", "_blank")
                               setIsChatPopoverOpen(false)
                           }}
                       >
