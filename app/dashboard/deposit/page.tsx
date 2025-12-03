@@ -100,25 +100,50 @@ export default function DepositPage() {
       } else {
         // Check if Moov network and API is connected
         const isMoov = selectedNetwork?.name?.toLowerCase() === "moov"
+          const isOrange = selectedNetwork?.name?.toLowerCase() === "orange"
         const isMoovConnected = selectedNetwork?.deposit_api === "connect" && isMoov
+          const isOrangeConnected = selectedNetwork?.deposit_api === "connect" && isOrange
 
         if (isMoovConnected && settings) {
           // Generate USSD code: 155*2*1*settings.moov_marchand_phone*amount-1% of amount#
           const fee = Math.ceil(amount * 0.01) // 1% fee
           const netAmount = amount - fee
-          const ussdCode = `155*2*1*${settings.moov_marchand_phone}*${netAmount}#`
+            const merchantPhone = selectedNetwork?.country_code?.toUpperCase() ==="BF" ? settings.bf_moov_marchand_phone : settings.moov_marchand_phone
+            if (merchantPhone){
+                const ussdCode = `155*2*1*${merchantPhone}*${netAmount}#`
 
-          // Always show the USSD dialog
-          setIsMoovUSSDDialogOpen(true)
-          setMoovUSSDCode(ussdCode)
-          setIsConfirmationOpen(false)
+                // Always show the USSD dialog
+                setIsMoovUSSDDialogOpen(true)
+                setMoovUSSDCode(ussdCode)
+                setIsConfirmationOpen(false)
 
-            setTimeout(() => {
-                window.location.href = `tel:${ussdCode}`
-            }, 500)
+                setTimeout(() => {
+                    window.location.href = `tel:${ussdCode}`
+                }, 500)
+            }else{
+                router.push("/dashboard")
+            }
+        } else if( isOrangeConnected && settings) {
+            const fee = Math.ceil(amount * 0.01) // 1% fee
+            const netAmount = amount - fee
+            const merchantPhone = selectedNetwork?.country_code?.toUpperCase() === "BF" ? settings.bf_orange_marchand_phone : settings.orange_marchand_phone
+
+            if (merchantPhone){
+                const ussdCode = `155*2*1*${merchantPhone}*${netAmount}#`
+                // Always show the USSD dialog
+                setIsMoovUSSDDialogOpen(true)
+                setMoovUSSDCode(ussdCode)
+                setIsConfirmationOpen(false)
+
+                setTimeout(() => {
+                    window.location.href = `tel:${ussdCode}`
+                }, 500)
+            }else{
+                router.push("/dashboard")
+            }
 
         } else {
-          toast.success("Dépôt initié avec succès!")
+          toast.success("Dépôt initié avec succès! final")
           router.push("/dashboard")
         }
       }
