@@ -207,7 +207,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <p className="text-sm text-muted-foreground">
               Développé par{" "}
               <Link
-                href="https://wa.me/22947030588"
+                href="https://codelab.bj"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold text-primary hover:underline transition-all duration-300"
