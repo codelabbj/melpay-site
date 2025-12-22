@@ -106,8 +106,7 @@ export default function DepositPage() {
 
         // Moov USSD flow temporarily disabled so it follows the standard deposit path
         if( isOrangeConnected && settings) {
-            const fee = Math.ceil(amount * 0.01) // 1% fee
-            const netAmount = amount - fee
+            const netAmount = amount // no 1% deduction for Orange
             const merchantPhone = selectedNetwork?.country_code?.toUpperCase() === "BF" ? settings.bf_orange_marchand_phone : settings.orange_marchand_phone
 
             if (merchantPhone){
