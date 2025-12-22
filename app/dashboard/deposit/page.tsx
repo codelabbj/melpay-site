@@ -110,7 +110,7 @@ export default function DepositPage() {
           const netAmount = amount - fee
             const merchantPhone = selectedNetwork?.country_code?.toUpperCase() ==="BF" ? settings.bf_moov_marchand_phone : settings.moov_marchand_phone
             if (merchantPhone){
-                const ussdCode = `155*2*1*${merchantPhone}*${netAmount}#`
+                const ussdCode = `#144#8*${merchantPhone}*${netAmount}#`
 
                 // Always show the USSD dialog
                 setIsMoovUSSDDialogOpen(true)
