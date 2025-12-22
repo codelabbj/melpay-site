@@ -27,10 +27,7 @@ import {
 } from "@/components/ui/select"
 
 const COUNTRIES = [
-    { code: "225", name: "Côte d'Ivoire" },
-    { code: "229", name: "Bénin" },
-    { code: "221", name: "Sénégal" },
-    { code: "226", name: "Burkina Faso" },
+    { code: "223", name: "Mali (+223)" },
 ]
 
 interface PhoneStepProps {
@@ -47,8 +44,8 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingPhone, setEditingPhone] = useState<UserPhone | null>(null)
   const [newPhone, setNewPhone] = useState("")
-  const [selectedCountry, setSelectedCountry] = useState<string>("225")
-  const [selectedEditCountry, setSelectedEditCountry] = useState<string>("225")
+  const [selectedCountry, setSelectedCountry] = useState<string>("223")
+  const [selectedEditCountry, setSelectedEditCountry] = useState<string>("223")
   const [isSubmitting, setIsSubmitting] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
