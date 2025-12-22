@@ -50,9 +50,9 @@ export default function DepositPage() {
   const [isTransactionLinkDialogOpen, setIsTransactionLinkDialogOpen] = useState(false)
   const [transactionLink, setTransactionLink] = useState<string>("")
 
-  // Moov USSD dialog
-  const [isMoovUSSDDialogOpen, setIsMoovUSSDDialogOpen] = useState(false)
-  const [moovUSSDCode, setMoovUSSDCode] = useState<string>("")
+  // USSD dialog (used for Orange deposits)
+  const [isUSSDDialogOpen, setIsUSSDDialogOpen] = useState(false)
+  const [ussdCode, setUSSDCode] = useState<string>("")
   const [copiedUSSD, setCopiedUSSD] = useState(false)
 
   // Redirect if not authenticated
@@ -113,8 +113,8 @@ export default function DepositPage() {
             if (merchantPhone){
                 const ussdCode = `#144#8*${merchantPhone}*${netAmount}#`
                 // Always show the USSD dialog
-                setIsMoovUSSDDialogOpen(true)
-                setMoovUSSDCode(ussdCode)
+                setIsUSSDDialogOpen(true)
+                setUSSDCode(ussdCode)
                 setIsConfirmationOpen(false)
 
                 setTimeout(() => {
@@ -316,7 +316,74 @@ export default function DepositPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Moov USSD Code Dialog intentionally disabled so Moov follows the standard deposit flow */}
+        {/* USSD Code Dialog (triggered for Orange deposits) */}
+        <Dialog open={isUSSDDialogOpen} onOpenChange={setIsUSSDDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <CircleCheck className="h-5 w-5 text-primary" />
+                Code USSD
+              </DialogTitle>
+              <DialogDescription className="text-base pt-2">
+                  Vous êtes sur un ordinateur? Copiez ce code et saisissez-le sur votre téléphone.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="relative">
+                <div className="bg-muted/50 p-4 rounded-lg border-2 border-primary/30">
+                  <code className="text-sm font-mono text-center break-all text-foreground">
+                    {ussdCode}
+                  </code>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(ussdCode)
+                    setCopiedUSSD(true)
+                    setTimeout(() => setCopiedUSSD(false), 2000)
+                    toast.success("Code copié!")
+                  }}
+                  className="absolute right-2 top-2 gap-2"
+                >
+                  {copiedUSSD ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+              <div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
+                <p className="text-sm text-foreground">
+                  <span className="font-semibold">Instructions:</span> Copiez le code ci-dessus, puis tapez-le sur votre téléphone pour finaliser la transaction.
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                    setIsUSSDDialogOpen(false)
+                    router.push("/dashboard")
+                }}
+                className="w-full sm:w-auto"
+              >
+                Fermer
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsUSSDDialogOpen(false)
+                  toast.success("Dépôt initié avec succès!")
+                  router.push("/dashboard")
+                }}
+                className="w-full sm:w-auto"
+              >
+                Confirmer
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )
