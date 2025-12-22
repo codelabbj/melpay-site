@@ -101,35 +101,17 @@ export default function DepositPage() {
         // Check if Moov network and API is connected
         const isMoov = selectedNetwork?.name?.toLowerCase() === "moov"
           const isOrange = selectedNetwork?.name?.toLowerCase() === "orange"
-        const isMoovConnected = selectedNetwork?.deposit_api === "connect" && isMoov
+        // const isMoovConnected = selectedNetwork?.deposit_api === "connect" && isMoov
           const isOrangeConnected = selectedNetwork?.deposit_api === "connect" && isOrange
 
-        if (isMoovConnected && settings) {
-          // Generate USSD code: 155*2*1*settings.moov_marchand_phone*amount-1% of amount#
-          const fee = Math.ceil(amount * 0.01) // 1% fee
-          const netAmount = amount - fee
-            const merchantPhone = selectedNetwork?.country_code?.toUpperCase() ==="BF" ? settings.bf_moov_marchand_phone : settings.moov_marchand_phone
-            if (merchantPhone){
-                const ussdCode = `#144#8*${merchantPhone}*${netAmount}#`
-
-                // Always show the USSD dialog
-                setIsMoovUSSDDialogOpen(true)
-                setMoovUSSDCode(ussdCode)
-                setIsConfirmationOpen(false)
-
-                setTimeout(() => {
-                    window.location.href = `tel:${ussdCode}`
-                }, 500)
-            }else{
-                router.push("/dashboard")
-            }
-        } else if( isOrangeConnected && settings) {
+        // Moov USSD flow temporarily disabled so it follows the standard deposit path
+        if( isOrangeConnected && settings) {
             const fee = Math.ceil(amount * 0.01) // 1% fee
             const netAmount = amount - fee
             const merchantPhone = selectedNetwork?.country_code?.toUpperCase() === "BF" ? settings.bf_orange_marchand_phone : settings.orange_marchand_phone
 
             if (merchantPhone){
-                const ussdCode = `155*2*1*${merchantPhone}*${netAmount}#`
+                const ussdCode = `#144#8*${merchantPhone}*${netAmount}#`
                 // Always show the USSD dialog
                 setIsMoovUSSDDialogOpen(true)
                 setMoovUSSDCode(ussdCode)
@@ -334,74 +316,7 @@ export default function DepositPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Moov USSD Code Dialog */}
-        <Dialog open={isMoovUSSDDialogOpen} onOpenChange={setIsMoovUSSDDialogOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-xl">
-                <CircleCheck className="h-5 w-5 text-primary" />
-                Code USSD Moov
-              </DialogTitle>
-              <DialogDescription className="text-base pt-2">
-                  Vous êtes sur un ordinateur? Veuillez copier ce code et le saisir sur votre téléphone mobile.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div className="relative">
-                <div className="bg-muted/50 p-4 rounded-lg border-2 border-primary/30">
-                  <code className="text-sm font-mono text-center break-all text-foreground">
-                    {moovUSSDCode}
-                  </code>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(moovUSSDCode)
-                    setCopiedUSSD(true)
-                    setTimeout(() => setCopiedUSSD(false), 2000)
-                    toast.success("Code copié!")
-                  }}
-                  className="absolute right-2 top-2 gap-2"
-                >
-                  {copiedUSSD ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-              <div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
-                <p className="text-sm text-foreground">
-                  <span className="font-semibold">Instructions:</span> Copiez le code ci-dessus, puis tapez-le sur votre téléphone mobile pour effectuer la transaction.
-                </p>
-              </div>
-            </div>
-
-            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                    setIsMoovUSSDDialogOpen(false)
-                    router.push("/dashboard")
-                }}
-                className="w-full sm:w-auto"
-              >
-                Fermer
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  setIsMoovUSSDDialogOpen(false)
-                  toast.success("Dépôt initié avec succès!")
-                  router.push("/dashboard")
-                }}
-                className="w-full sm:w-auto"
-              >
-                Confirmer
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Moov USSD Code Dialog intentionally disabled so Moov follows the standard deposit flow */}
       </div>
     </div>
   )
