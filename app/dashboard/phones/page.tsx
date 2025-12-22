@@ -37,10 +37,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const COUNTRIES = [
-    { code: "225", name: "Côte d'Ivoire" },
-    { code: "229", name: "Bénin" },
-    { code: "221", name: "Sénégal" },
-    { code: "226", name: "Burkina Faso" },
+    { code: "223", name: "Mali (+223)" },
 ]
 
 const phoneSchema = z.object({
@@ -208,12 +205,15 @@ export default function PhonesPage() {
     }
   }
 
+  const selectedNetworkId = phoneForm.watch("network")
+  const activeNetwork = networks.find((network) => network.id === Number(selectedNetworkId))
+
   const openEditPhoneDialog = (phone: UserPhone) => {
     setEditingPhone(phone)
 
     // Extract country code from phone number (first 3 digits typically)
     // Check against known country codes
-    const countryCode = COUNTRIES.find(c => phone.phone.startsWith(c.code))?.code || "225"
+    const countryCode = COUNTRIES.find(c => phone.phone.startsWith(c.code))?.code || "223"
 
     // Extract the phone number without country code
     const phoneWithoutCountry = phone.phone.substring(countryCode.length)
@@ -379,13 +379,18 @@ export default function PhonesPage() {
 
                               <div className="space-y-2">
                                   <Label htmlFor="phone">Numéro de téléphone</Label>
-                                  <Input
-                                      id="phone"
-                                      type="tel"
-                                      placeholder="Ex: 0712345678"
-                                      {...phoneForm.register("phone")}
-                                      disabled={isSubmitting}
-                                  />
+                                          <Input
+                                              id="phone"
+                                              type="tel"
+                                              placeholder={activeNetwork?.placeholder ?? "Ex: 012345678"}
+                                              {...phoneForm.register("phone")}
+                                              disabled={isSubmitting}
+                                          />
+                                          {activeNetwork?.indication && (
+                                            <p className="text-xs text-muted-foreground">
+                                              {activeNetwork.indication}
+                                            </p>
+                                          )}
                                   {phoneForm.formState.errors.phone && (
                                       <p className="text-sm text-destructive">{phoneForm.formState.errors.phone.message}</p>
                                   )}

@@ -302,8 +302,13 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
                 id="phone"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
-                placeholder="Ex: 0712345678"
+                placeholder={selectedNetwork?.placeholder ?? "Ex: 012345678"}
               />
+              {selectedNetwork?.indication && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {selectedNetwork.indication}
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -355,8 +360,13 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
                 id="editPhone"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
-                placeholder="Ex: 0712345678"
+                placeholder={selectedNetwork?.placeholder ?? "Ex: 0712345678"}
               />
+              {selectedNetwork?.indication && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {selectedNetwork.indication}
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>
