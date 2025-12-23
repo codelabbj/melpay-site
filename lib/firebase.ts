@@ -30,10 +30,15 @@ if (getApps().length === 0) {
 // export const db = getFirestore(app);
 // export const storage = getStorage(app);
 
-// Initialize messaging (only in browser)
+// Initialize messaging (only in browser when config is complete)
 let messaging: Messaging | null = null;
-if (typeof window !== 'undefined') {
+const canInitMessaging =
+  typeof window !== "undefined" && !!firebaseConfig.projectId && !!firebaseConfig.messagingSenderId && !!firebaseConfig.appId;
+
+if (canInitMessaging) {
   messaging = getMessaging(app);
+} else if (typeof window !== "undefined") {
+  console.warn("Firebase messaging not initialized. Missing project configuration values.");
 }
 
 export { messaging };
