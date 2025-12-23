@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/carousel"
 import Image from "next/image"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover"
+import {useSettings} from "@/lib/settings-context";
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -34,7 +35,7 @@ export default function DashboardPage() {
   const [ads, setAds] = useState<Ad[]>([])
   const [isCarouselHovered, setIsCarouselHovered] = useState(false)
   const carouselRef = useRef<HTMLDivElement>(null)
-
+    const {settings} = useSettings()
 
   useEffect(() => {
     if (user) {
@@ -460,7 +461,7 @@ export default function DashboardPage() {
                           className="w-full justify-start gap-3 h-auto px-3 py-3 rounded-lg hover:bg-green-500/10 transition-all duration-200 group"
                           onClick={() => {
                               // Replace with your WhatsApp number (format: country code + number without + or spaces)
-                              window.open("https://wa.me/22393569345", "_blank")
+                              window.open(`https://wa.me/${settings?.whatsapp_phone}`, "_blank")
                               setIsChatPopoverOpen(false)
                           }}
                       >
@@ -478,7 +479,7 @@ export default function DashboardPage() {
                           className="w-full justify-start gap-3 h-auto px-3 py-3 rounded-lg hover:bg-blue-500/10 transition-all duration-200 group"
                           onClick={() => {
                               // Replace with your Telegram username
-                              window.open("https://t.me/your_username", "_blank")
+                              window.open(settings?.telegram||"https://t.me/your_username", "_blank")
                               setIsChatPopoverOpen(false)
                           }}
                       >
