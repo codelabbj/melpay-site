@@ -1,14 +1,14 @@
 import api from "./api"
 import type {
-    AuthResponse,
-    Network,
-    UserPhone,
-    Platform,
-    UserAppId,
-    Transaction,
-    PaginatedResponse,
-    Notification,
-    Bonus, BetId, Coupon, UserProfile, Ad, User,
+  AuthResponse,
+  Network,
+  UserPhone,
+  Platform,
+  UserAppId,
+  Transaction,
+  PaginatedResponse,
+  Notification,
+  Bonus, BetId, Coupon, UserProfile, Ad, User,
 } from "./types"
 
 export const authApi = {
@@ -42,11 +42,11 @@ export const authApi = {
     return data
   },
 
-  resetPassword: async (otp:string, new_password : string, confirm_new_password:string) => {
+  resetPassword: async (otp: string, new_password: string, confirm_new_password: string) => {
     const { data } = await api.post("/auth/reset_password", {
-        otp,
-        new_password,
-        confirm_new_password
+      otp,
+      new_password,
+      confirm_new_password
     })
     return data
   },
@@ -95,12 +95,12 @@ export const platformApi = {
 
 export const userAppIdApi = {
 
-    getAll: async () => {
-      const {data} = await api.get<UserAppId[]>("/mobcash/user-app-id/")
-      return data
-    },
+  getAll: async () => {
+    const { data } = await api.get<UserAppId[]>("/mobcash/user-app-id/")
+    return data
+  },
 
-    getByPlatform: async (bet_app: string) => {
+  getByPlatform: async (bet_app: string) => {
     const { data } = await api.get<UserAppId[]>(`/mobcash/user-app-id?bet_app=${bet_app}`)
     return data
   },
@@ -112,10 +112,10 @@ export const userAppIdApi = {
     })
     return data
   },
-    search: async (user_id:string, betId: string) => {
-        const {data} =  await api.post<BetId>("mobcash/search-user",{userid:user_id,app_id:betId})
-        return data
-    },
+  search: async (user_id: string, betId: string) => {
+    const { data } = await api.post<BetId>("mobcash/search-user", { userid: user_id, app_id: betId })
+    return data
+  },
 
   update: async (id: number, user_app_id: string, app: string) => {
     const { data } = await api.patch<UserAppId>(`/mobcash/user-app-id/${id}/`, {
@@ -180,14 +180,33 @@ export const transactionApi = {
     return data
   },
 
-    createBonusDeposit: async (bonusData: {
-        app: string
-        amount: number
-        user_app_id: string
-    })=>{
-        const {data }= await api.post<Transaction>("/mobcash/transaction-bonus", bonusData)
-        return data
-    }
+  createBonusDeposit: async (bonusData: {
+    app: string
+    amount: number
+    user_app_id: string
+  }) => {
+    const { data } = await api.post<Transaction>("/mobcash/transaction-bonus", bonusData)
+    return data
+  },
+
+  getLastTransaction: async () => {
+    const { data } = await api.get<Transaction>("/mobcash/last-transaction")
+    return data
+  },
+
+  cancelTransaction: async (reference: string) => {
+    const { data } = await api.post("/mobcash/cancel-transaction", {
+      reference,
+    })
+    return data
+  },
+
+  finalizeTransaction: async (reference: string) => {
+    const { data } = await api.post<Transaction>("/mobcash/finalize-transaction-user", {
+      reference,
+    })
+    return data
+  },
 }
 
 export const notificationApi = {
@@ -205,16 +224,16 @@ export const bonusApi = {
 }
 
 export const couponApi = {
-    getAll: async (page = 1) => {
-        const {data} = await api.get<PaginatedResponse<Coupon>>(`/mobcash/coupon?page=${page}`)
-        return data
-    }
+  getAll: async (page = 1) => {
+    const { data } = await api.get<PaginatedResponse<Coupon>>(`/mobcash/coupon?page=${page}`)
+    return data
+  }
 }
 
 export const fcmApi = {
   registerToken: async (token: string, platform: string = 'web', userId?: string | number) => {
     const { data } = await api.post('/mobcash/devices/', {
-      registration_id:token,
+      registration_id: token,
       type: platform,
       user_id: userId || null,
     })
@@ -227,37 +246,37 @@ export const fcmApi = {
 }
 
 export const adsApi = {
-    getAll: async () => {
-        const {data} = await api.get<PaginatedResponse<Ad>>("/mobcash/ann")
-        return data
-    }
+  getAll: async () => {
+    const { data } = await api.get<PaginatedResponse<Ad>>("/mobcash/ann")
+    return data
+  }
 }
 
 export const settingApi = {
-    getSetting: async ()=> {
-        const {data} = await api.get("/mobcash/setting")
-        return data
-    }
+  getSetting: async () => {
+    const { data } = await api.get("/mobcash/setting")
+    return data
+  }
 }
 
 export const profileApi = {
-    get : async () => {
-        const {data} = await api.get<User>(`/auth/me`)
-        return data
-    },
+  get: async () => {
+    const { data } = await api.get<User>(`/auth/me`)
+    return data
+  },
 
-    update: async (user: UserProfile) => {
-        const {data} = await api.patch(`/auth/edit`, user)
-        return data
-    },
+  update: async (user: UserProfile) => {
+    const { data } = await api.patch(`/auth/edit`, user)
+    return data
+  },
 
-    changePassword: async (new_password:string,confirm_new_password:string,old_password:string) => {
-        const query = {
-            new_password:new_password,
-            confirm_new_password:confirm_new_password,
-            old_password:old_password,
-        }
-        const {data} = await api.post(`/auth/change_password`, query)
-        return data
+  changePassword: async (new_password: string, confirm_new_password: string, old_password: string) => {
+    const query = {
+      new_password: new_password,
+      confirm_new_password: confirm_new_password,
+      old_password: old_password,
     }
+    const { data } = await api.post(`/auth/change_password`, query)
+    return data
+  }
 }

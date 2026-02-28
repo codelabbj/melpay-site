@@ -16,6 +16,8 @@ import { AmountStep } from "@/components/transaction/steps/amount-step"
 import { transactionApi } from "@/lib/api-client"
 import type { Platform, UserAppId, Network, UserPhone } from "@/lib/types"
 import { toast } from "react-hot-toast"
+import { TransactionSummaryDialog } from "@/components/transaction/transaction-summary-dialog"
+import type { Transaction } from "@/lib/types"
 import {
   Dialog,
   DialogContent,
@@ -34,6 +36,9 @@ export default function DepositPage() {
   // Step management
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 5
+
+  const [lastTransaction, setLastTransaction] = useState<Transaction | null>(null)
+  const [isTransactionSummaryOpen, setIsTransactionSummaryOpen] = useState(false)
   
   // Form data
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null)
@@ -76,64 +81,116 @@ export default function DepositPage() {
   }
 
   const handleConfirmTransaction = async () => {
-    if (!selectedPlatform || !selectedBetId || !selectedNetwork || !selectedPhone) {
-      toast.error("Données manquantes pour la transaction")
-      return
-    }
+  if (!selectedPlatform || !selectedBetId || !selectedNetwork || !selectedPhone) {
+    toast.error("Données manquantes pour la transaction")
+    return
+  }
 
-    setIsSubmitting(true)
+  setIsSubmitting(true)
+  try {
+    const response = await transactionApi.createDeposit({
+      amount,
+      phone_number: selectedPhone.phone,
+      app: selectedPlatform.id,
+      user_app_id: selectedBetId.user_app_id,
+      network: selectedNetwork.id,
+      source: "web"
+    })
+
+    // Fermer la confirmation dialog
+    setIsConfirmationOpen(false)
+
+    // Récupérer la dernière transaction
     try {
-      const response = await transactionApi.createDeposit({
-        amount,
-        phone_number: selectedPhone.phone,
-        app: selectedPlatform.id,
-        user_app_id: selectedBetId.user_app_id,
-        network: selectedNetwork.id,
-        source: "web"
-      })
-
+      const lastTrans = await transactionApi.getLastTransaction()
+      setLastTransaction(lastTrans)
+      setIsTransactionSummaryOpen(true)
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la dernière transaction:", error)
+      
+      // Continuer le flux normal même si on ne peut pas récupérer la transaction
       if (response.transaction_link) {
-        // Close confirmation dialog and show transaction link dialog
-        setIsConfirmationOpen(false)
         setTransactionLink(response.transaction_link)
         setIsTransactionLinkDialogOpen(true)
       } else {
-        // Check if Moov network and API is connected
         const isMoov = selectedNetwork?.name?.toLowerCase() === "moov"
-          const isOrange = selectedNetwork?.name?.toLowerCase() === "orange"
-        // const isMoovConnected = selectedNetwork?.deposit_api === "connect" && isMoov
-          const isOrangeConnected = selectedNetwork?.deposit_api === "connect" && isOrange
+        const isOrange = selectedNetwork?.name?.toLowerCase() === "orange"
+        const isOrangeConnected = selectedNetwork?.deposit_api === "connect" && isOrange
 
-        // Moov USSD flow temporarily disabled so it follows the standard deposit path
-        if( isOrangeConnected && settings) {
-            const netAmount = amount // no 1% deduction for Orange
-            const merchantPhone = selectedNetwork?.country_code?.toUpperCase() === "BF" ? settings.bf_orange_marchand_phone : settings.orange_marchand_phone
+        if(isOrangeConnected && settings) {
+          const netAmount = amount
+          const merchantPhone = selectedNetwork?.country_code?.toUpperCase() === "BF" ? settings.bf_orange_marchand_phone : settings.orange_marchand_phone
 
-            if (merchantPhone){
-                const ussdCode = `#144#8*${merchantPhone}*${netAmount}#`
-                // Always show the USSD dialog
-                setIsUSSDDialogOpen(true)
-                setUSSDCode(ussdCode)
-                setIsConfirmationOpen(false)
+          if (merchantPhone){
+            const ussdCode = `#144#8*${merchantPhone}*${netAmount}#`
+            setIsUSSDDialogOpen(true)
+            setUSSDCode(ussdCode)
 
-                setTimeout(() => {
-                    window.location.href = `tel:${ussdCode}`
-                }, 500)
-            }else{
-                router.push("/dashboard")
-            }
-
+            setTimeout(() => {
+              window.location.href = `tel:${ussdCode}`
+            }, 500)
+          } else {
+            router.push("/dashboard")
+          }
         } else {
-          toast.success("Dépôt initié avec succès! final")
+          toast.success("Dépôt initié avec succès!")
           router.push("/dashboard")
         }
       }
-    } catch (error) {
-      toast.error("Erreur lors de la création du dépôt")
-    } finally {
-      setIsSubmitting(false)
     }
+  } catch (error) {
+    toast.error("Erreur lors de la création du dépôt")
+  } finally {
+    setIsSubmitting(false)
   }
+}
+
+  const handleCancelTransaction = async (reference: string) => {
+  await transactionApi.cancelTransaction(reference)
+  setTimeout(() => {
+    router.push("/dashboard")
+  }, 1000)
+}
+
+const handleFinalizeTransaction = async (reference: string) => {
+  try {
+    const finalizedTransaction = await transactionApi.finalizeTransaction(reference)
+    
+    console.log("Transaction finalisée:", finalizedTransaction)
+    
+    setIsTransactionSummaryOpen(false)
+    
+    if (finalizedTransaction.transaction_link) {
+      setTransactionLink(finalizedTransaction.transaction_link)
+      setIsTransactionLinkDialogOpen(true)
+    } else {
+      const isOrange = selectedNetwork?.name?.toLowerCase() === "orange"
+      const isOrangeConnected = selectedNetwork?.deposit_api === "connect" && isOrange
+
+      if(isOrangeConnected && settings) {
+        const netAmount = amount
+        const merchantPhone = selectedNetwork?.country_code?.toUpperCase() === "BF" ? settings.bf_orange_marchand_phone : settings.orange_marchand_phone
+
+        if (merchantPhone){
+          const ussdCode = `#144#8*${merchantPhone}*${netAmount}#`
+          setIsUSSDDialogOpen(true)
+          setUSSDCode(ussdCode)
+
+          setTimeout(() => {
+            window.location.href = `tel:${ussdCode}`
+          }, 500)
+        } else {
+          router.push("/dashboard")
+        }
+      } else {
+        toast.success("Dépôt initié avec succès!")
+        router.push("/dashboard")
+      }
+    }
+  } catch (error) {
+    throw error
+  }
+}
 
   const handleConfirmRedirect = () => {
     if (transactionLink) {
@@ -383,6 +440,16 @@ export default function DepositPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <TransactionSummaryDialog
+          isOpen={isTransactionSummaryOpen}
+          onClose={() => {
+            setIsTransactionSummaryOpen(false)
+          }}
+          transaction={lastTransaction}
+          onCancel={handleCancelTransaction}
+          onFinalize={handleFinalizeTransaction}
+          isLoading={isSubmitting}
+        />
       </div>
     </div>
   )
