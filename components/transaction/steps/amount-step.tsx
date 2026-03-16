@@ -21,6 +21,7 @@ interface AmountStepProps {
   selectedPhone: UserPhone | null
   type: "deposit" | "withdrawal"
   onNext: () => void
+  hasPending?: boolean
 }
 
 export function AmountStep({
@@ -33,7 +34,8 @@ export function AmountStep({
   selectedNetwork,
   selectedPhone,
   type,
-  onNext
+  onNext,
+  hasPending = false
 }: AmountStepProps) {
   const [errors, setErrors] = useState<{ amount?: string; withdriwalCode?: string }>({})
 
@@ -264,7 +266,7 @@ export function AmountStep({
       <div className="flex justify-end pt-2">
         <Button
           onClick={onNext}
-          disabled={!isFormValid()}
+          disabled={!isFormValid() || hasPending}
           size="lg"
           className="min-w-[140px]"
         >
