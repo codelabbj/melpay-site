@@ -119,6 +119,11 @@ export default function TransactionHistoryPage() {
     }
   }
 
+  const handleRowClick = (transaction: Transaction) => {
+    sessionStorage.setItem('cached_transaction', JSON.stringify(transaction))
+    router.push(`/dashboard/history/detail?id=${transaction.reference}`)
+  }
+
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -273,6 +278,7 @@ export default function TransactionHistoryPage() {
                   <Card
                     key={transaction.id}
                     className="relative overflow-hidden border rounded-2xl sm:rounded-3xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10 cursor-pointer group"
+                    onClick={() => handleRowClick(transaction)}
                   >
                     <CardContent>
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 md:gap-8">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef} from "react"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -116,6 +117,13 @@ export default function DashboardPage() {
     } catch (error) {
       toast.error("Erreur lors de la copie")
     }
+  }
+
+  const router = useRouter()
+
+  const handleRowClick = (transaction: Transaction) => {
+    sessionStorage.setItem('cached_transaction', JSON.stringify(transaction))
+    router.push(`/dashboard/history/detail?id=${transaction.reference}`)
   }
 
   return (
@@ -306,7 +314,7 @@ export default function DashboardPage() {
                   ) : (
                       <div className="space-y-3">
                           {recentTransactions.map((transaction) => (
-                              <Card key={transaction.id} className="relative overflow-hidden border rounded-2xl sm:rounded-3xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10 cursor-pointer group">
+                              <Card key={transaction.id} className="relative overflow-hidden border rounded-2xl sm:rounded-3xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10 cursor-pointer group" onClick={() => handleRowClick(transaction)}>
                                   <CardContent className="p-4 sm:p-6 md:p-7">
                                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 md:gap-8">
                                           {/* Left section */}
