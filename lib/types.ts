@@ -127,6 +127,17 @@ export interface Transaction {
   network: number
   message?: string
   ussd_code?: string
+  // Crypto transaction fields
+  total_crypto?: string | number | null
+  wallet_link?: string | null
+  hash?: string | null
+  crypto?: {
+    id: number
+    name: string
+    symbol: string
+    logo: string
+    sale_adress?: string
+  } | null
 }
 
 export interface PaginatedResponse<T> {

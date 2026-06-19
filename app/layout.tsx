@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/auth-context"
 import { SettingsProvider } from "@/lib/settings-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "react-hot-toast"
+import { GoogleOAuthProvider } from "@react-oauth/google"
 
 const inter = Inter({ subsets: ["latin"] })
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"] })
@@ -30,12 +31,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SettingsProvider>
-            <AuthProvider>
-              {children}
-              <Toaster position="top-right" />
-            </AuthProvider>
-          </SettingsProvider>
+          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+            <SettingsProvider>
+              <AuthProvider>
+                {children}
+                <Toaster position="top-right" />
+              </AuthProvider>
+            </SettingsProvider>
+          </GoogleOAuthProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -3,7 +3,9 @@ export const TYPE_TRANS = [
   ["deposit", "Dépôt"],
   ["withdrawal", "Retrait"],
   ["disbursements", "Disbursements"],
-  ["reward", "reward"],
+  ["reward", "Récompense"],
+  ["buy", "Achat Crypto"],
+  ["sale", "Vente Crypto"],
 ] as const
 
 // Transaction Status
@@ -79,6 +81,8 @@ export const TRANSACTION_TYPES = {
   WITHDRAWAL: "withdrawal" as const,
   DISBURSEMENTS: "disbursements" as const,
   REWARD: "reward" as const,
+  BUY: "buy" as const,
+  SALE: "sale" as const,
 }
 
 export const TRANSACTION_STATUSES = {

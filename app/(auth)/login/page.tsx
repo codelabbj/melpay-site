@@ -16,6 +16,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react"
 import { setupNotifications } from "@/lib/fcm-helper"
 import Image from "next/image";
 import logo from "@/public/logo.png"
+import { GoogleButton } from "@/components/google-button"
 
 const loginSchema = z.object({
   email_or_phone: z.string().min(1, "Email ou téléphone requis"),
@@ -220,6 +221,9 @@ export default function LoginPage() {
                   </Link>
                 </p>
               </div>
+
+              {/* Google Sign-In */}
+              <GoogleButton mode="login" />
             </div>
           </div>
         </div>

@@ -15,6 +15,7 @@ import { toast } from "react-hot-toast"
 import { Loader2, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
 import logo from "@/public/logo.png"
+import { GoogleButton } from "@/components/google-button"
 
 const getSignupSchema = () => {
   const baseSchema = {
@@ -39,6 +40,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showRePassword, setShowRePassword] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const referralBonusEnabled = settings?.referral_bonus || false
   const signupSchema = getSignupSchema()
   type SignupFormData = z.infer<typeof signupSchema>
@@ -52,6 +54,10 @@ export default function SignupPage() {
   })
 
   const onSubmit = async (data: SignupFormData) => {
+    if (!termsAccepted) {
+      toast.error("Veuillez accepter les conditions d'utilisation")
+      return
+    }
     setIsLoading(true)
     try {
         const query:typeof data = {
@@ -252,11 +258,28 @@ export default function SignupPage() {
                       )
                   }
 
+              {/* Terms checkbox */}
+              <div className="flex items-start gap-3 pt-1">
+                <input
+                  id="terms"
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="w-5 h-5 mt-0.5 rounded border-2 border-border text-primary focus:ring-primary shrink-0 cursor-pointer"
+                />
+                <label htmlFor="terms" className="text-xs sm:text-sm text-muted-foreground cursor-pointer leading-relaxed">
+                  En cliquant sur Créer mon compte, vous acceptez nos{" "}
+                  <Link href="/terms" className="font-semibold text-primary hover:underline">
+                    conditions d'utilisation
+                  </Link>{" "}
+                  et confirmez que vous avez plus de 18 ans.
+                </label>
+              </div>
 
               <Button
                 type="submit"
                 className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 rounded-xl"
-                disabled={isLoading}
+                disabled={isLoading || !termsAccepted}
               >
                 {isLoading ? (
                   <>
@@ -281,6 +304,9 @@ export default function SignupPage() {
                 </Link>
               </p>
             </div>
+
+            {/* Google Sign-Up */}
+            <GoogleButton mode="register" />
 
           </div>
         </div>

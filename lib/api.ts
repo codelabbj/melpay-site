@@ -58,15 +58,26 @@ api.interceptors.response.use(
     const fallback =
       defaultLang === "fr" ? "Une erreur est survenue. Veuillez réessayer." : "An unexpected error occurred."
 
-    const backendMsg =
+    // Only show a toast for simple string-level errors (detail/message).
+    // Field-level errors like {"amount": [...]} are handled by the component itself.
+    const simpleMsg =
       error.response?.data?.details ||
       error.response?.data?.detail ||
       error.response?.data?.error ||
-      error.response?.data?.message || fallback
-      //(typeof error.response?.data === "string" ? error.response.data : fallback)
+      error.response?.data?.message
 
-    const lang = detectLang(backendMsg)
-    toast.error(backendMsg, { style: { direction: "ltr" } })
+    const hasOnlyFieldErrors =
+      error.response?.data &&
+      typeof error.response.data === "object" &&
+      !simpleMsg
+
+    if (!hasOnlyFieldErrors) {
+      const displayMsg = simpleMsg || fallback
+      const lang = detectLang(displayMsg)
+      toast.error(displayMsg, { style: { direction: "ltr" } })
+    }
+
+    // Always pass the original error through so components can read response.data
     return Promise.reject(error)
   },
 )
