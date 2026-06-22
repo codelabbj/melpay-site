@@ -26,6 +26,7 @@ import {
 import Image from "next/image"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover"
 import {useSettings} from "@/lib/settings-context";
+import AppDownloadButton from "@/components/AppDownloadButton";
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -212,6 +213,9 @@ export default function DashboardPage() {
                       </Link>
                   ))}
               </div>
+
+              {/* App Download Button */}
+              <AppDownloadButton />
 
               {/* Crypto Achat / Vente */}
               {settings?.crypto_enable !== false && (

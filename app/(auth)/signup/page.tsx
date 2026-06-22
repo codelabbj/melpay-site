@@ -16,6 +16,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
 import logo from "@/public/logo.png"
 import { GoogleButton } from "@/components/google-button"
+import AppDownloadButton from "@/components/AppDownloadButton"
 
 const getSignupSchema = () => {
   const baseSchema = {
@@ -307,6 +308,9 @@ export default function SignupPage() {
 
             {/* Google Sign-Up */}
             <GoogleButton mode="register" />
+            
+            {/* App Download Button */}
+            <AppDownloadButton />
 
           </div>
         </div>
