@@ -130,6 +130,9 @@ export default function DashboardPage() {
   return (
       <>
           <div className="space-y-6 sm:space-y-8 px-4 sm:px-0">
+              {/* App Download Banner */}
+              <AppDownloadButton />
+
               {/* Welcome section */}
               <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3">
@@ -213,9 +216,6 @@ export default function DashboardPage() {
                       </Link>
                   ))}
               </div>
-
-              {/* App Download Button */}
-              <AppDownloadButton />
 
               {/* Crypto Achat / Vente */}
               {settings?.crypto_enable !== false && (
