@@ -35,6 +35,33 @@ const formatPhoneNumber = (phone: string): string => {
   return phone.replace(/\D/g, '').slice(0, 8)
 }
 
+// Helper to extract error messages from API responses
+const getErrorMessage = (error: any): string => {
+  if (error.response?.data) {
+    const data = error.response.data
+    // Handle field errors like {"phone": ["Ce numéro existe déjà..."]}
+    if (typeof data === 'object') {
+      // Join all error messages from all fields
+      const errors: string[] = []
+      Object.values(data).forEach(value => {
+        if (Array.isArray(value)) {
+          errors.push(...value)
+        } else if (typeof value === 'string') {
+          errors.push(value)
+        }
+      })
+      if (errors.length > 0) {
+        return errors.join(' ')
+      }
+    }
+    // If it's just a string message
+    if (typeof data === 'string') {
+      return data
+    }
+  }
+  return "Erreur"
+}
+
 interface PhoneStepProps {
   selectedNetwork: Network | null
   selectedPhone: UserPhone | null
@@ -99,7 +126,7 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
       setIsAddDialogOpen(false)
       toast.success("Numéro de téléphone ajouté avec succès")
     } catch (error) {
-      toast.error("Erreur lors de l'ajout du numéro de téléphone")
+      toast.error(getErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }
@@ -133,7 +160,7 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
       setIsEditDialogOpen(false)
       toast.success("Numéro de téléphone modifié avec succès")
     } catch (error) {
-      toast.error("Erreur lors de la modification du numéro de téléphone")
+      toast.error(getErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }
