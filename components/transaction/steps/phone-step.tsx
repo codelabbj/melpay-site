@@ -30,6 +30,11 @@ const COUNTRIES = [
     { code: "223", name: "Mali (+223)" },
 ]
 
+// Format phone number: remove non-digits, keep max 8
+const formatPhoneNumber = (phone: string): string => {
+  return phone.replace(/\D/g, '').slice(0, 8)
+}
+
 interface PhoneStepProps {
   selectedNetwork: Network | null
   selectedPhone: UserPhone | null
@@ -77,11 +82,11 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
     if (!newPhone.trim() || !selectedNetwork) return
 
     // Validate and clean phone number
-    const cleanedPhone = newPhone.trim().replace(/\s+/g, "")
+    const cleanedPhone = formatPhoneNumber(newPhone)
 
-    // Check if phone number contains only digits
-    if (!/^\d+$/.test(cleanedPhone)) {
-      toast.error("Veuillez entrer uniquement des chiffres")
+    // Check if phone number contains only digits and length is between 6-8
+    if (!/^\d+$/.test(cleanedPhone) || cleanedPhone.length < 6 || cleanedPhone.length > 8) {
+      toast.error("Veuillez entrer un numéro de téléphone valide (6 à 8 chiffres)")
       return
     }
 
@@ -104,11 +109,11 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
     if (!newPhone.trim() || !editingPhone || !selectedNetwork) return
 
     // Validate and clean phone number
-    const cleanedPhone = newPhone.trim().replace(/\s+/g, "")
+    const cleanedPhone = formatPhoneNumber(newPhone)
 
-    // Check if phone number contains only digits
-    if (!/^\d+$/.test(cleanedPhone)) {
-      toast.error("Veuillez entrer uniquement des chiffres")
+    // Check if phone number contains only digits and length is between 6-8
+    if (!/^\d+$/.test(cleanedPhone) || cleanedPhone.length < 6 || cleanedPhone.length > 8) {
+      toast.error("Veuillez entrer un numéro de téléphone valide (6 à 8 chiffres)")
       return
     }
 
@@ -159,7 +164,8 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
 
   const openEditDialog = (phone: UserPhone) => {
     setEditingPhone(phone)
-    setNewPhone(phone.phone)
+    // Extract just the number part without the country code (first 3 digits)
+    setNewPhone(phone.phone.slice(3))
     setIsEditDialogOpen(true)
   }
 
@@ -301,8 +307,9 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
               <Input
                 id="phone"
                 value={newPhone}
-                onChange={(e) => setNewPhone(e.target.value)}
+                onChange={(e) => setNewPhone(formatPhoneNumber(e.target.value))}
                 placeholder={selectedNetwork?.placeholder ?? "Ex: 012345678"}
+                maxLength={8}
               />
               {selectedNetwork?.indication && (
                 <p className="text-xs text-muted-foreground mt-1">
@@ -359,8 +366,9 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
               <Input
                 id="editPhone"
                 value={newPhone}
-                onChange={(e) => setNewPhone(e.target.value)}
+                onChange={(e) => setNewPhone(formatPhoneNumber(e.target.value))}
                 placeholder={selectedNetwork?.placeholder ?? "Ex: 0712345678"}
+                maxLength={8}
               />
               {selectedNetwork?.indication && (
                 <p className="text-xs text-muted-foreground mt-1">
