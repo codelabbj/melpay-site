@@ -24,6 +24,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
+      <head>
+        {/* Google Identity Services — requis pour le bouton Google */}
+        <script src="https://accounts.google.com/gsi/client" async defer />
+      </head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"

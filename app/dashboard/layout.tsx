@@ -19,6 +19,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import Image from "next/image";
 import logo from "@/public/logo.png"
 import {useSettings} from "@/lib/settings-context";
+import NotificationChannelDialog from "@/components/NotificationChannelDialog"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -199,6 +200,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main content */}
       <main className="flex-1 container mx-auto px-4 py-8 relative z-20">{children}</main>
+
+      <NotificationChannelDialog />
 
       {/* Footer */}
       <footer className="w-full bg-background relative z-10 py-6 sm:py-8">

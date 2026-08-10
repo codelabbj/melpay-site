@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
   ArrowLeft, Info, Copy, Phone, Receipt, Calendar, User,
-  CheckCircle2, XCircle, Loader2, Bitcoin, Hash, Wallet
+  CheckCircle2, XCircle, Loader2, Bitcoin, Hash, Wallet, X
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { transactionApi, settingApi, networkApi } from "@/lib/api-client"
@@ -12,6 +12,7 @@ import type { Transaction, Network, Setting } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
 import toast from "react-hot-toast"
 import { useAuth } from "@/lib/auth-context"
+import { SupportChatbot } from "@/components/SupportChatbot"
 
 function TransactionDetailContent() {
   const router = useRouter()
@@ -23,6 +24,8 @@ function TransactionDetailContent() {
   const [settings, setSettings] = useState<Setting | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isChatOpen, setIsChatOpen] = useState(false)
+  const [claimMessage, setClaimMessage] = useState("")
   const { user } = useAuth()
 
   useEffect(() => { if (id) fetchData() }, [id])
@@ -300,6 +303,35 @@ function TransactionDetailContent() {
           </div>
         </div>
 
+
+        {/* Claim / Assistant IA */}
+        <Button
+          className="w-full h-12 rounded-2xl text-sm font-bold border border-primary/20 bg-card text-primary hover:bg-muted active:scale-[0.98] transition-all"
+          onClick={() => {
+            const transType = isCrypto
+              ? (transaction.type_trans === "buy" ? "achat crypto" : "vente crypto")
+              : transaction.type_trans === "deposit" ? "dépôt" : "retrait"
+            const userName = user ? `${user.first_name} ${user.last_name}` : "Utilisateur"
+            const networkName = network?.public_name || "N/A"
+
+            const message =
+              `Bonjour moi c'est ${userName}, j'ai besoin d'aide concernant mon ${transType}.\n` +
+              `Type: ${transType}\n` +
+              `Date: ${formatDate(transaction.created_at)}\n` +
+              `Référence: ${transaction.reference}\n` +
+              `Montant: XOF ${transaction.amount}\n` +
+              `Réseau: ${networkName}\n` +
+              `Téléphone: ${transaction.phone_number}\n` +
+              `ID joueur: ${transaction.user_app_id || "N/A"}`
+
+            setClaimMessage(message)
+            setIsChatOpen(true)
+          }}
+        >
+          <Phone className="h-4 w-4 mr-2" />
+          Envoyer une réclamation
+        </Button>
+
         {/* Support */}
         <Button
           className="w-full h-12 rounded-2xl text-sm font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
@@ -332,6 +364,36 @@ function TransactionDetailContent() {
           </button>
         </div>
       </main>
+
+      {isChatOpen && (
+        <div className="fixed inset-0 z-[110] flex flex-col justify-end sm:justify-center bg-black/50 p-0 sm:p-4">
+          <div className="w-full sm:max-w-lg mx-auto flex flex-col bg-background rounded-t-3xl sm:rounded-3xl shadow-2xl h-[min(80vh,640px)] max-h-[calc(100dvh-2rem)]">
+            <div className="shrink-0 flex items-center justify-between px-4 pt-4 pb-2">
+              <div>
+                <p className="font-bold text-lg">Assistant IA</p>
+                <p className="text-sm text-muted-foreground">Réclamation concernant cette transaction</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsChatOpen(false)}
+                className="w-10 h-10 border border-border rounded-xl flex items-center justify-center"
+                aria-label="Fermer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 px-3 pb-3">
+              <SupportChatbot
+                hideHeader
+                pageKey="transaction_detail"
+                route="/dashboard/history/detail"
+                screenTitle="Réclamation transaction"
+                initialMessage={claimMessage}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -14,6 +14,7 @@ import { ArrowLeft, Edit, Save, X, Loader2, Eye, EyeOff } from "lucide-react"
 import { toast } from "react-hot-toast"
 import {UserProfile} from "@/lib/types";
 import {profileApi} from "@/lib/api-client";
+import NotificationChannelsPanel from "@/components/NotificationChannelsPanel"
 
 const profileSchema = z.object({
   first_name: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
@@ -205,6 +206,13 @@ export default function ProfilePage() {
             </Button>
           )}
         </div>
+
+        {/* Notification Channels */}
+        <Card className="border-2">
+          <CardContent className="pt-6">
+            <NotificationChannelsPanel mode="profile" showHeader />
+          </CardContent>
+        </Card>
 
         {/* Profile Card */}
         <Card className="border-2">

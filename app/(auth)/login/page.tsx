@@ -224,7 +224,7 @@ export default function LoginPage() {
               </div>
 
               {/* Google Sign-In */}
-              <GoogleButton mode="login" />
+              <GoogleButton mode="login" disabled={isLoading} />
               
               {/* App Download Button */}
               <AppDownloadButton />

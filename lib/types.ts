@@ -205,6 +205,12 @@ export interface UserProfile {
 export interface Setting {
   referral_bonus: boolean
   reward_mini_withdrawal: number
+  use_whatsapp?: boolean
+  use_telegram?: boolean
+  use_sms?: boolean
+  use_chatbot?: boolean
+  whatsapp_phone?: string | null
+  telegram?: string | null
   [key: string]: any
 }
 

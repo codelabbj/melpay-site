@@ -307,7 +307,7 @@ export default function SignupPage() {
             </div>
 
             {/* Google Sign-Up */}
-            <GoogleButton mode="register" />
+            <GoogleButton mode="register" disabled={isLoading} />
             
             {/* App Download Button */}
             <AppDownloadButton />

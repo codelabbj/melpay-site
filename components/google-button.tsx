@@ -9,6 +9,7 @@ import api from "@/lib/api"
 
 interface GoogleButtonProps {
   mode?: "login" | "register"
+  disabled?: boolean
 }
 
 function GoogleIcon() {
@@ -22,7 +23,7 @@ function GoogleIcon() {
   )
 }
 
-export function GoogleButton({ mode = "login" }: GoogleButtonProps) {
+export function GoogleButton({ mode = "login", disabled = false }: GoogleButtonProps) {
   const { login } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -74,7 +75,7 @@ export function GoogleButton({ mode = "login" }: GoogleButtonProps) {
       <button
         type="button"
         onClick={() => googleLogin()}
-        disabled={isLoading}
+        disabled={isLoading || disabled}
         className="w-full flex items-center justify-center gap-3 h-11 sm:h-12 px-4 rounded-xl border-2 border-border bg-background hover:bg-muted/50 active:scale-[0.98] transition-all duration-200 text-sm font-medium text-foreground disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer touch-manipulation select-none"
       >
         {isLoading ? (

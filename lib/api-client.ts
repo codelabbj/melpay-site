@@ -254,8 +254,13 @@ export const adsApi = {
 
 export const settingApi = {
   getSetting: async () => {
-    const { data } = await api.get("/mobcash/setting")
-    return data
+    try {
+      const { data } = await api.get("/mobcash/v2/setting/")
+      return data
+    } catch {
+      const { data } = await api.get("/mobcash/setting")
+      return data
+    }
   }
 }
 

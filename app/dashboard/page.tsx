@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
     ArrowDownToLine, ArrowUpFromLine, Wallet, Loader2, ArrowRight, RefreshCw, Copy, Check, Smartphone, Ticket,
-    MessageSquare, Send, CreditCard, Phone, Bitcoin
+    MessageSquare, Send, CreditCard, Phone, Bitcoin, Bot, X
 } from "lucide-react"
 import Link from "next/link"
 import {adsApi, transactionApi} from "@/lib/api-client"
@@ -27,6 +27,8 @@ import Image from "next/image"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover"
 import {useSettings} from "@/lib/settings-context";
 import AppDownloadButton from "@/components/AppDownloadButton";
+import {SupportChatbot} from "@/components/SupportChatbot";
+import { formatTelegramLink, formatWhatsAppLink } from "@/lib/channel-links";
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -37,7 +39,15 @@ export default function DashboardPage() {
   const [ads, setAds] = useState<Ad[]>([])
   const [isCarouselHovered, setIsCarouselHovered] = useState(false)
   const carouselRef = useRef<HTMLDivElement>(null)
-    const {settings} = useSettings()
+    const {settings, refreshSettings} = useSettings()
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+    const chatbotEnabled = Boolean(settings?.use_chatbot)
+    const telegramEnabled = Boolean(settings?.use_telegram)
+    const whatsappEnabled = Boolean(settings?.use_whatsapp)
+    const whatsappUrl = formatWhatsAppLink(settings?.whatsapp_phone)
+    const telegramUrl = formatTelegramLink(settings?.telegram)
+    const showContactFab =
+      chatbotEnabled || (whatsappEnabled && Boolean(whatsappUrl)) || (telegramEnabled && Boolean(telegramUrl))
 
   useEffect(() => {
     if (user) {
@@ -370,7 +380,11 @@ export default function DashboardPage() {
                   )}
               </div>
           </div>
-          <Popover open={isChatPopoverOpen} onOpenChange={setIsChatPopoverOpen}>
+          {showContactFab ? (
+          <Popover open={isChatPopoverOpen} onOpenChange={(open) => {
+              setIsChatPopoverOpen(open)
+              if (open) void refreshSettings()
+          }}>
               <PopoverTrigger asChild>
                   <Button
                       className="fixed right-4 bottom-24 sm:bottom-10 sm:right-8 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
@@ -390,12 +404,31 @@ export default function DashboardPage() {
                           <h3 className="text-sm font-semibold text-foreground mb-1">Besoin d'aide ?</h3>
                           <p className="text-xs text-muted-foreground">Contactez-nous via :</p>
                       </div>
+                      {chatbotEnabled && (
+                          <Button
+                              variant="ghost"
+                              className="w-full justify-start gap-3 h-auto px-3 py-3 rounded-lg hover:bg-primary/10 transition-all duration-200 group"
+                              onClick={() => {
+                                  setIsChatPopoverOpen(false)
+                                  setIsChatbotOpen(true)
+                              }}
+                          >
+                              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-200">
+                                  <Bot className="h-5 w-5" />
+                              </div>
+                              <div className="flex flex-col items-start flex-1">
+                                  <span className="font-medium text-sm text-foreground">Assistant IA</span>
+                                  <span className="text-xs text-muted-foreground">Réponse instantanée</span>
+                              </div>
+                              <div className="text-xs font-semibold text-primary">→</div>
+                          </Button>
+                      )}
+                      {whatsappEnabled && whatsappUrl ? (
                       <Button
                           variant="ghost"
                           className="w-full justify-start gap-3 h-auto px-3 py-3 rounded-lg hover:bg-green-500/10 transition-all duration-200 group"
                           onClick={() => {
-                              // Replace with your WhatsApp number (format: country code + number without + or spaces)
-                              window.open(`https://wa.me/${settings?.whatsapp_phone}`, "_blank")
+                              window.open(whatsappUrl, "_blank")
                               setIsChatPopoverOpen(false)
                           }}
                       >
@@ -408,12 +441,13 @@ export default function DashboardPage() {
                           </div>
                           <div className="text-xs font-semibold text-green-600 group-hover:text-green-500">→</div>
                       </Button>
+                      ) : null}
+                      {telegramEnabled && telegramUrl ? (
                       <Button
                           variant="ghost"
                           className="w-full justify-start gap-3 h-auto px-3 py-3 rounded-lg hover:bg-blue-500/10 transition-all duration-200 group"
                           onClick={() => {
-                              // Replace with your Telegram username
-                              window.open(settings?.telegram||"https://t.me/your_username", "_blank")
+                              window.open(telegramUrl, "_blank")
                               setIsChatPopoverOpen(false)
                           }}
                       >
@@ -426,9 +460,40 @@ export default function DashboardPage() {
                           </div>
                           <div className="text-xs font-semibold text-blue-600 group-hover:text-blue-500">→</div>
                       </Button>
+                      ) : null}
                   </div>
               </PopoverContent>
           </Popover>
+          ) : null}
+
+          {isChatbotOpen && chatbotEnabled && (
+              <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4">
+                  <div className="w-full sm:max-w-lg mx-auto flex flex-col bg-background rounded-t-3xl sm:rounded-3xl shadow-2xl h-[min(80vh,640px)] max-h-[calc(100dvh-2rem)]">
+                      <div className="shrink-0 flex items-center justify-between px-4 pt-4 pb-2">
+                          <div>
+                              <p className="font-bold text-lg">Assistant IA</p>
+                              <p className="text-sm text-muted-foreground">Tapez votre message en bas</p>
+                          </div>
+                          <button
+                              type="button"
+                              onClick={() => setIsChatbotOpen(false)}
+                              className="w-10 h-10 border border-border rounded-xl flex items-center justify-center"
+                              aria-label="Fermer"
+                          >
+                              <X className="w-5 h-5" />
+                          </button>
+                      </div>
+                      <div className="flex-1 min-h-0 px-3 pb-3">
+                          <SupportChatbot
+                              hideHeader
+                              pageKey="dashboard"
+                              route="/dashboard"
+                              screenTitle="Dashboard"
+                          />
+                      </div>
+                  </div>
+              </div>
+          )}
       </>
   )
 }
