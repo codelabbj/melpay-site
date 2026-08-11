@@ -50,8 +50,7 @@ export default function NotificationChannelDialog() {
         if (hasAnyChannelVerified(user)) return;
 
         const needWhatsapp = Boolean(
-          settings?.use_whatsapp &&
-            !(user?.whatsapp_verified || user?.user_whatsapp_phone || user?.whatsapp)
+          settings?.use_whatsapp && !(user?.user_whatsapp_phone || user?.whatsapp)
         );
         const needTelegram = Boolean(settings?.use_telegram && !user?.telegram_verified);
         const needSms = Boolean(settings?.use_sms && !user?.sms_verified);

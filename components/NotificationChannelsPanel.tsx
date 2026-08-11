@@ -151,9 +151,7 @@ function openTelegramUrl(url: string) {
 }
 
 export function hasAnyChannelVerified(user: Record<string, unknown> | null | undefined) {
-  const whatsappOk = Boolean(
-    user?.whatsapp_verified || user?.user_whatsapp_phone || user?.whatsapp
-  );
+  const whatsappOk = Boolean(user?.user_whatsapp_phone || user?.whatsapp);
   return Boolean(whatsappOk || user?.telegram_verified || user?.sms_verified);
 }
 
@@ -187,7 +185,7 @@ export function useNotificationChannelStatus(autoFetch = true) {
       const useWhatsapp = Boolean(settings?.use_whatsapp);
       const useTelegram = Boolean(settings?.use_telegram);
       const useSms = Boolean(settings?.use_sms);
-      const whatsappVerified = Boolean(user?.whatsapp_verified || user?.user_whatsapp_phone || user?.whatsapp);
+      const whatsappVerified = Boolean(user?.user_whatsapp_phone || user?.whatsapp);
       const telegramVerified = Boolean(user?.telegram_verified);
       const smsVerified = Boolean(user?.sms_verified);
 
@@ -366,13 +364,15 @@ export default function NotificationChannelsPanel({
   }, []);
 
   const loadData = useCallback(async (background = false) => {
+    // Ne jamais faire confiance au cache pour l'état "Connecté" :
+    // on l'utilise seulement pour préremplir les champs en attendant /auth/me.
     const cached = readChannelSessionCache();
-    const cachedAt = Number(sessionStorage.getItem(CHANNEL_SESSION_TS) || '0');
-    const cacheIsFresh = cached && Date.now() - cachedAt < CHANNEL_SESSION_TTL_MS;
-
     if (cached && !background) {
-      applyChannelState(cached);
-      if (cacheIsFresh) return;
+      setCountryCode(cached.countryCode);
+      setSmsPhone(cached.smsPhone);
+      setWhatsappPhone(cached.whatsappPhone);
+      setTelegramUsername(cached.telegramUsername);
+      setTelegramLink(cached.telegramLink);
     }
 
     try {
@@ -387,7 +387,8 @@ export default function NotificationChannelsPanel({
       const useWhatsapp = Boolean(settings?.use_whatsapp);
       const useTelegram = Boolean(settings?.use_telegram);
       const useSms = Boolean(settings?.use_sms);
-      const waVerified = Boolean(user?.whatsapp_verified || user?.user_whatsapp_phone || user?.whatsapp);
+      // Connecté uniquement si un numéro WA est réellement en DB
+      const waVerified = Boolean(user?.user_whatsapp_phone || user?.whatsapp);
       const tgVerified = Boolean(user?.telegram_verified);
       const smVerified = Boolean(user?.sms_verified);
 
@@ -448,11 +449,17 @@ export default function NotificationChannelsPanel({
       if (!skipStatusCallbackRef.current) {
         onStatusChange?.();
       }
+      skipStatusCallbackRef.current = false;
+
+      if (mode === 'prompt' && waVerified && (!useTelegram || tgVerified) && (!useSms || smVerified)) {
+        onAllDone?.();
+      }
     } catch (err) {
       console.error('Erreur chargement canaux:', err);
+      invalidateChannelSessionCache();
       setInitialized(true);
     }
-  }, [mode, onStatusChange, applyChannelState]);
+  }, [mode, onAllDone, onStatusChange]);
 
   useEffect(() => {
     loadData();
@@ -522,24 +529,24 @@ export default function NotificationChannelsPanel({
       const response = await api.post('/auth/whatsapp-phone', {
         user_whatsapp_phone: `${countryCode}${digitsOnly}`,
       });
-      const verified = Boolean(
-        response.data?.whatsapp_verified ||
-          response.data?.user_whatsapp_phone ||
-          response.data?.success
-      );
+      const verified = Boolean(response.data?.user_whatsapp_phone);
       setWhatsappVerified(verified);
+      if (!verified) {
+        setError("Le numéro n'a pas été enregistré côté serveur. Réessayez.");
+        return;
+      }
       if (response.data?.user_whatsapp_phone) {
         const parsed = splitPhoneNumber(String(response.data.user_whatsapp_phone), countryCode);
         setCountryCode(parsed.countryCode);
         setWhatsappPhone(parsed.localPhone);
       }
+      invalidateChannelSessionCache();
       if (mode === 'prompt') {
         setShowWhatsapp(false);
         onAllDone?.();
       }
       setSuccess('WhatsApp validé. Vous recevrez vos alertes sur ce numéro.');
       onStatusChange?.();
-      invalidateChannelSessionCache();
       await loadData();
     } catch (err: any) {
       const message = err?.response?.data?.message || err?.response?.data?.details;
