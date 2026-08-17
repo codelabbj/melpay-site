@@ -7,8 +7,8 @@ import {
   CheckCircle2, XCircle, Loader2, Bitcoin, Hash, Wallet, X
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { transactionApi, settingApi, networkApi } from "@/lib/api-client"
-import type { Transaction, Network, Setting } from "@/lib/types"
+import { transactionApi, networkApi } from "@/lib/api-client"
+import type { Transaction, Network } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
 import toast from "react-hot-toast"
 import { useAuth } from "@/lib/auth-context"
@@ -21,7 +21,6 @@ function TransactionDetailContent() {
 
   const [transaction, setTransaction] = useState<Transaction | null>(null)
   const [networks, setNetworks] = useState<Network[]>([])
-  const [settings, setSettings] = useState<Setting | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isChatOpen, setIsChatOpen] = useState(false)
@@ -57,13 +56,9 @@ function TransactionDetailContent() {
         }
       }
 
-      const [networksData, settingsData] = await Promise.all([
-        networkApi.getAll(),
-        settingApi.getSetting(),
-      ])
+      const networksData = await networkApi.getAll()
       setTransaction(transactionData)
       setNetworks(networksData)
-      setSettings(settingsData)
     } catch (err) {
       setError("Erreur lors du chargement de la transaction")
     } finally {
@@ -306,7 +301,7 @@ function TransactionDetailContent() {
 
         {/* Claim / Assistant IA */}
         <Button
-          className="w-full h-12 rounded-2xl text-sm font-bold border border-primary/20 bg-card text-primary hover:bg-muted active:scale-[0.98] transition-all"
+          className="w-full h-12 rounded-2xl text-sm font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
           onClick={() => {
             const transType = isCrypto
               ? (transaction.type_trans === "buy" ? "achat crypto" : "vente crypto")
@@ -330,38 +325,6 @@ function TransactionDetailContent() {
         >
           <Phone className="h-4 w-4 mr-2" />
           Envoyer une réclamation
-        </Button>
-
-        {/* Support — WhatsApp only if open_whatsapp_for_support, sinon chatbot */}
-        <Button
-          className="w-full h-12 rounded-2xl text-sm font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
-          onClick={() => {
-            const transType = isCrypto ? (transaction.type_trans === "buy" ? "achat crypto" : "vente crypto") : transaction.type_trans === "deposit" ? "dépôt" : "retrait"
-            const userName = user ? `${user.first_name} ${user.last_name}` : "{Utilisateur}"
-            const fmt = (d: string) => {
-              const dt = new Date(d)
-              return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`
-            }
-            const cryptoLine = isCrypto && transaction.crypto && transaction.total_crypto ? `\n*Crypto:* ${transaction.total_crypto} ${transaction.crypto.symbol}` : ""
-            const walletLine = transaction.wallet_link ? `\n*Portefeuille:* ${transaction.wallet_link}` : ""
-            const hashLine = transaction.hash ? `\n*Hash:* ${transaction.hash}` : ""
-            const appIdLine = !isCrypto ? `\n*ID App:* ${transaction.user_app_id}` : ""
-            const msg = `Bonjour moi c'est ${userName}, j'ai besoin d'aide concernant mon ${transType}.\n*Référence:* ${transaction.reference}\n*Montant:* XOF ${transaction.amount.toLocaleString()}\n*Date:* ${fmt(transaction.created_at)}\n*Réseau:* ${network?.public_name || "N/A"}\n*Téléphone:* ${transaction.phone_number}${cryptoLine}${walletLine}${hashLine}${appIdLine}\nLa capture du ${transType}`
-            if (settings?.open_whatsapp_for_support) {
-              const phone = settings?.whatsapp_phone || "2250544360901"
-              window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank")
-              return
-            }
-            if (settings?.use_chatbot) {
-              setClaimMessage(msg)
-              setIsChatOpen(true)
-              return
-            }
-            toast.error("Le support n'est pas disponible pour le moment.")
-          }}
-        >
-          <Phone className="h-4 w-4 mr-2" />
-          Contacter le support
         </Button>
 
         <div className="flex justify-center pb-4">
