@@ -14,6 +14,8 @@ export default function ContactPage() {
   const { settings, isLoading: settingsLoading } = useSettings()
   const [ready, setReady] = useState(false)
   const chatbotEnabled = Boolean(settings?.use_chatbot)
+  const openWhatsappForSupport = Boolean(settings?.open_whatsapp_for_support)
+  const whatsappPhone = String(settings?.whatsapp_phone || "").replace(/\D/g, "")
 
   useEffect(() => {
     if (authLoading) return
@@ -23,6 +25,12 @@ export default function ContactPage() {
     }
     if (!settingsLoading) setReady(true)
   }, [user, authLoading, settingsLoading, router])
+
+  useEffect(() => {
+    if (!ready || !openWhatsappForSupport) return
+    if (!whatsappPhone) return
+    window.location.href = `https://wa.me/${whatsappPhone}`
+  }, [ready, openWhatsappForSupport, whatsappPhone])
 
   if (authLoading || !ready) {
     return (
@@ -50,7 +58,13 @@ export default function ContactPage() {
       </header>
 
       <main className="flex-1 min-h-0 max-w-3xl w-full mx-auto p-3">
-        {chatbotEnabled ? (
+        {openWhatsappForSupport ? (
+          <div className="rounded-xl border bg-background p-4 text-sm text-muted-foreground">
+            {!whatsappPhone
+              ? "Le support WhatsApp est activé, mais aucun numéro WhatsApp n'est configuré."
+              : "Ouverture de WhatsApp en cours..."}
+          </div>
+        ) : chatbotEnabled ? (
           <div className="h-[min(78vh,640px)] rounded-xl border bg-background overflow-hidden">
             <SupportChatbot pageKey="contact" route="/contact" screenTitle="Support" />
           </div>

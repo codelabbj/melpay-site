@@ -210,6 +210,7 @@ export interface Setting {
   use_telegram?: boolean
   use_sms?: boolean
   use_chatbot?: boolean
+  open_whatsapp_for_support?: boolean
   whatsapp_phone?: string | null
   telegram?: string | null
   [key: string]: any
