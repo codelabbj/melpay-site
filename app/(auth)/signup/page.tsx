@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -37,7 +37,8 @@ const getSignupSchema = () => {
 
 export default function SignupPage() {
   const router = useRouter()
-  const { settings } = useSettings()
+  const { settings, isHydrated } = useSettings()
+  const registrationEnabled = settings?.registration_enabled !== false
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showRePassword, setShowRePassword] = useState(false)
@@ -53,6 +54,20 @@ export default function SignupPage() {
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   })
+
+  useEffect(() => {
+    if (isHydrated && !registrationEnabled) {
+      router.replace("/login")
+    }
+  }, [isHydrated, registrationEnabled, router])
+
+  if (!isHydrated || !registrationEnabled) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   const onSubmit = async (data: SignupFormData) => {
     if (!termsAccepted) {

@@ -40,7 +40,7 @@ export function GoogleButton({ mode = "login", disabled = false }: GoogleButtonP
         })
         const { access, refresh, data } = response.data
         login(access, refresh, data)
-        toast.success(mode === "register" ? "Compte créé avec succès!" : "Connexion réussie!")
+        toast.success("Connexion réussie!")
         router.push("/dashboard")
       } catch (error: any) {
         const msg =

@@ -88,7 +88,7 @@ export default function TermsPage() {
         {/* Back button */}
         <div className="mt-8">
           <Link
-            href="/signup"
+            href="/login"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card hover:bg-muted transition-colors text-sm font-medium text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />

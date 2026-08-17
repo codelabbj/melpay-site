@@ -18,6 +18,7 @@ import Image from "next/image";
 import logo from "@/public/logo.png"
 import { GoogleButton } from "@/components/google-button"
 import AppDownloadButton from "@/components/AppDownloadButton"
+import { useSettings } from "@/lib/settings-context"
 
 const loginSchema = z.object({
   email_or_phone: z.string().min(1, "Email ou téléphone requis"),
@@ -29,6 +30,8 @@ type LoginFormData = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
+  const { settings, isHydrated } = useSettings()
+  const registrationEnabled = settings?.registration_enabled !== false
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -211,17 +214,19 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <div className="mt-6 sm:mt-8 text-center">
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Pas encore de compte?{" "}
-                  <Link
-                    href="/signup"
-                    className="text-primary hover:text-primary/80 font-semibold hover:underline transition-colors"
-                  >
-                    Créer un compte
-                  </Link>
-                </p>
-              </div>
+              {isHydrated && registrationEnabled && (
+                <div className="mt-6 sm:mt-8 text-center">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Pas encore de compte?{" "}
+                    <Link
+                      href="/signup"
+                      className="text-primary hover:text-primary/80 font-semibold hover:underline transition-colors"
+                    >
+                      Créer un compte
+                    </Link>
+                  </p>
+                </div>
+              )}
 
               {/* Google Sign-In */}
               <GoogleButton mode="login" disabled={isLoading} />
