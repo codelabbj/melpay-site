@@ -332,23 +332,32 @@ function TransactionDetailContent() {
           Envoyer une réclamation
         </Button>
 
-        {/* Support */}
+        {/* Support — WhatsApp only if open_whatsapp_for_support, sinon chatbot */}
         <Button
           className="w-full h-12 rounded-2xl text-sm font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-primary/20"
           onClick={() => {
-            const phone = settings?.whatsapp_phone || "2250544360901"
+            const transType = isCrypto ? (transaction.type_trans === "buy" ? "achat crypto" : "vente crypto") : transaction.type_trans === "deposit" ? "dépôt" : "retrait"
+            const userName = user ? `${user.first_name} ${user.last_name}` : "{Utilisateur}"
             const fmt = (d: string) => {
               const dt = new Date(d)
               return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`
             }
-            const transType = isCrypto ? (transaction.type_trans === "buy" ? "achat crypto" : "vente crypto") : transaction.type_trans === "deposit" ? "dépôt" : "retrait"
-            const userName = user ? `${user.first_name} ${user.last_name}` : "{Utilisateur}"
             const cryptoLine = isCrypto && transaction.crypto && transaction.total_crypto ? `\n*Crypto:* ${transaction.total_crypto} ${transaction.crypto.symbol}` : ""
             const walletLine = transaction.wallet_link ? `\n*Portefeuille:* ${transaction.wallet_link}` : ""
             const hashLine = transaction.hash ? `\n*Hash:* ${transaction.hash}` : ""
             const appIdLine = !isCrypto ? `\n*ID App:* ${transaction.user_app_id}` : ""
             const msg = `Bonjour moi c'est ${userName}, j'ai besoin d'aide concernant mon ${transType}.\n*Référence:* ${transaction.reference}\n*Montant:* XOF ${transaction.amount.toLocaleString()}\n*Date:* ${fmt(transaction.created_at)}\n*Réseau:* ${network?.public_name || "N/A"}\n*Téléphone:* ${transaction.phone_number}${cryptoLine}${walletLine}${hashLine}${appIdLine}\nLa capture du ${transType}`
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank")
+            if (settings?.open_whatsapp_for_support) {
+              const phone = settings?.whatsapp_phone || "2250544360901"
+              window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank")
+              return
+            }
+            if (settings?.use_chatbot) {
+              setClaimMessage(msg)
+              setIsChatOpen(true)
+              return
+            }
+            toast.error("Le support n'est pas disponible pour le moment.")
           }}
         >
           <Phone className="h-4 w-4 mr-2" />
