@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft,CircleCheck, Copy, Check} from "lucide-react"
+import { ArrowLeft,CircleCheck, Copy, Check, Phone, Smartphone} from "lucide-react"
 import { DepositStepper } from "@/components/transaction/deposit-stepper"
 import { StepNavigation } from "@/components/transaction/step-navigation"
 import { ConfirmationDialog } from "@/components/transaction/confirmation-dialog"
@@ -55,6 +55,12 @@ export default function DepositPage() {
   const [isTransactionLinkDialogOpen, setIsTransactionLinkDialogOpen] = useState(false)
   const [transactionLink, setTransactionLink] = useState<string>("")
 
+  // Wave personnel dialog
+  const [isWavePersonnelDialogOpen, setIsWavePersonnelDialogOpen] = useState(false)
+  const [wavePersonnelNumero, setWavePersonnelNumero] = useState("")
+  const [wavePersonnelAmount, setWavePersonnelAmount] = useState(0)
+  const [waveNumeroCopied, setWaveNumeroCopied] = useState(false)
+
   // USSD dialog (used for Orange deposits)
   const [isUSSDDialogOpen, setIsUSSDDialogOpen] = useState(false)
   const [ussdCode, setUSSDCode] = useState<string>("")
@@ -101,6 +107,21 @@ export default function DepositPage() {
   }
 
   const handleTransactionFlow = (transaction: any) => {
+    const isWavePersonnel =
+      transaction?.wave_business === false ||
+      (selectedNetwork?.name === "wave" && selectedNetwork?.wave_business === false)
+    const merchantNumero =
+      transaction?.wave_personnel_numero ||
+      selectedNetwork?.wave_personnel_numero ||
+      ""
+
+    if (isWavePersonnel && merchantNumero) {
+      setWavePersonnelNumero(merchantNumero)
+      setWavePersonnelAmount(Number(transaction?.amount ?? amount) || amount || 0)
+      setIsWavePersonnelDialogOpen(true)
+      return
+    }
+
     if (transaction.transaction_link) {
       setTransactionLink(transaction.transaction_link)
       setIsTransactionLinkDialogOpen(true)
@@ -413,6 +434,80 @@ const handleFinalizeTransaction = async (reference: string) => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Wave personnel — paiement manuel */}
+        <Dialog
+          open={isWavePersonnelDialogOpen}
+          onOpenChange={(open) => {
+            setIsWavePersonnelDialogOpen(open)
+            if (!open) {
+              setWaveNumeroCopied(false)
+              router.push("/dashboard")
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-md border-border bg-card text-card-foreground">
+            <div className="flex flex-col items-center text-center space-y-3 pt-2">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/15 ring-2 ring-primary/40">
+                <Smartphone className="h-7 w-7 text-primary" />
+              </div>
+              <DialogHeader className="space-y-1">
+                <DialogTitle className="text-xl text-center">Paiement Wave</DialogTitle>
+                <DialogDescription className="text-center text-muted-foreground">
+                  Continuez en envoyant le montant exact à ce numéro
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+
+            <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-4">
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Numéro marchand</p>
+                <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2.5">
+                  <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="font-mono text-base tracking-wide">{wavePersonnelNumero}</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Montant</p>
+                <p className="text-2xl font-bold text-primary">
+                  {Number(wavePersonnelAmount).toLocaleString("fr-FR")} FCFA
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  setIsWavePersonnelDialogOpen(false)
+                  router.push("/dashboard")
+                }}
+              >
+                Fermer
+              </Button>
+              <Button
+                type="button"
+                className="w-full sm:w-auto gap-2"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(wavePersonnelNumero)
+                    setWaveNumeroCopied(true)
+                    toast.success("Numéro copié")
+                    setTimeout(() => setWaveNumeroCopied(false), 2000)
+                  } catch {
+                    toast.error("Impossible de copier")
+                  }
+                }}
+              >
+                {waveNumeroCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                Copier
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <TransactionSummaryDialog
           isOpen={isTransactionSummaryOpen}
           onClose={() => {

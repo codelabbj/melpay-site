@@ -50,6 +50,8 @@ export interface Network {
   deposit_message: string
   active_for_deposit: boolean
   active_for_with: boolean
+  wave_business?: boolean
+  wave_personnel_numero?: string | null
 }
 
 export interface UserPhone {
@@ -127,6 +129,8 @@ export interface Transaction {
   network: number
   message?: string
   ussd_code?: string
+  wave_business?: boolean | null
+  wave_personnel_numero?: string | null
   // Crypto transaction fields
   total_crypto?: string | number | null
   wallet_link?: string | null
