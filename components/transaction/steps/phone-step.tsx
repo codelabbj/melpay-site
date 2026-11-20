@@ -27,8 +27,8 @@ import {
 } from "@/components/ui/select"
 
 const COUNTRIES = [
-    { code: "225", name: "Côte d'Ivoire (+225)" },
     { code: "223", name: "Mali (+223)" },
+    { code: "225", name: "Côte d'Ivoire (+225)" },
     { code: "226", name: "Burkina Faso (+226)" },
     { code: "221", name: "Sénégal (+221)" },
     { code: "229", name: "Bénin (+229)" },
@@ -84,8 +84,8 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingPhone, setEditingPhone] = useState<UserPhone | null>(null)
   const [newPhone, setNewPhone] = useState("")
-  const [selectedCountry, setSelectedCountry] = useState<string>("225")
-  const [selectedEditCountry, setSelectedEditCountry] = useState<string>("225")
+  const [selectedCountry, setSelectedCountry] = useState<string>("223")
+  const [selectedEditCountry, setSelectedEditCountry] = useState<string>("223")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -278,7 +278,7 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
   const openEditDialog = (phone: UserPhone) => {
     setEditingPhone(phone)
     const country = phone.phone.slice(0, 3)
-    setSelectedEditCountry(COUNTRIES.some((c) => c.code === country) ? country : "225")
+    setSelectedEditCountry(COUNTRIES.some((c) => c.code === country) ? country : "223")
     setNewPhone(phone.phone.slice(3))
     setEditOtpStep(false)
     setEditOtpCode("")

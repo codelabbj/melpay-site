@@ -37,8 +37,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const COUNTRIES = [
-    { code: "225", name: "Côte d'Ivoire (+225)" },
     { code: "223", name: "Mali (+223)" },
+    { code: "225", name: "Côte d'Ivoire (+225)" },
     { code: "226", name: "Burkina Faso (+226)" },
     { code: "221", name: "Sénégal (+221)" },
     { code: "229", name: "Bénin (+229)" },
@@ -420,7 +420,7 @@ export default function PhonesPage() {
                                       <Label htmlFor="country">Pays</Label>
                                       <Select
                                           onValueChange={(value) => phoneForm.setValue("country", value)}
-                                          defaultValue={editingPhone ? phoneForm.getValues("country") : "225"}
+                                          defaultValue={editingPhone ? phoneForm.getValues("country") : "223"}
                                           disabled={isSubmitting}
                                       >
                                           <SelectTrigger id="country" className="w-full">
