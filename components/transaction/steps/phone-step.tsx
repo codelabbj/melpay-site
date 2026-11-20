@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Loader2, Plus, Edit, Trash2 } from "lucide-react"
-import { phoneApi } from "@/lib/api-client"
+import { authApi, phoneApi } from "@/lib/api-client"
 import type { UserPhone, Network } from "@/lib/types"
 import { toast } from "react-hot-toast"
 import {
@@ -27,8 +27,17 @@ import {
 } from "@/components/ui/select"
 
 const COUNTRIES = [
+    { code: "225", name: "Côte d'Ivoire (+225)" },
     { code: "223", name: "Mali (+223)" },
+    { code: "226", name: "Burkina Faso (+226)" },
+    { code: "221", name: "Sénégal (+221)" },
+    { code: "229", name: "Bénin (+229)" },
 ]
+
+const otpBrand = () =>
+  typeof window !== "undefined" && window.location.hostname.includes("fastxof")
+    ? "FastXOF"
+    : "Melpay"
 
 // Format phone number: remove non-digits, keep max 8
 const formatPhoneNumber = (phone: string): string => {
@@ -39,9 +48,9 @@ const formatPhoneNumber = (phone: string): string => {
 const getErrorMessage = (error: any): string => {
   if (error.response?.data) {
     const data = error.response.data
-    // Handle field errors like {"phone": ["Ce numéro existe déjà..."]}
     if (typeof data === 'object') {
-      // Join all error messages from all fields
+      if (typeof data.details === "string" && data.details) return data.details
+      if (typeof data.error === "string" && data.error) return data.error
       const errors: string[] = []
       Object.values(data).forEach(value => {
         if (Array.isArray(value)) {
@@ -54,7 +63,6 @@ const getErrorMessage = (error: any): string => {
         return errors.join(' ')
       }
     }
-    // If it's just a string message
     if (typeof data === 'string') {
       return data
     }
@@ -76,12 +84,16 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingPhone, setEditingPhone] = useState<UserPhone | null>(null)
   const [newPhone, setNewPhone] = useState("")
-  const [selectedCountry, setSelectedCountry] = useState<string>("223")
-  const [selectedEditCountry, setSelectedEditCountry] = useState<string>("223")
+  const [selectedCountry, setSelectedCountry] = useState<string>("225")
+  const [selectedEditCountry, setSelectedEditCountry] = useState<string>("225")
   const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-    const [isDeleting, setIsDeleting] = useState(false)
-    const [deletePhone, setDeletePhone] = useState<UserPhone | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deletePhone, setDeletePhone] = useState<UserPhone | null>(null)
+  const [otpStep, setOtpStep] = useState(false)
+  const [otpCode, setOtpCode] = useState("")
+  const [editOtpStep, setEditOtpStep] = useState(false)
+  const [editOtpCode, setEditOtpCode] = useState("")
 
   useEffect(() => {
     if (selectedNetwork) {
@@ -105,13 +117,26 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
     }
   }
 
+  const resetAddDialog = () => {
+    setNewPhone("")
+    setOtpStep(false)
+    setOtpCode("")
+    setIsAddDialogOpen(false)
+  }
+
+  const resetEditDialog = () => {
+    setNewPhone("")
+    setEditingPhone(null)
+    setEditOtpStep(false)
+    setEditOtpCode("")
+    setIsEditDialogOpen(false)
+  }
+
   const handleAddPhone = async () => {
     if (!newPhone.trim() || !selectedNetwork) return
 
-    // Validate and clean phone number
     const cleanedPhone = formatPhoneNumber(newPhone)
 
-    // Check if phone number contains only digits and length is between 6-8
     if (!/^\d+$/.test(cleanedPhone) || cleanedPhone.length < 6 || cleanedPhone.length > 8) {
       toast.error("Veuillez entrer un numéro de téléphone valide (6 à 8 chiffres)")
       return
@@ -119,11 +144,40 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
 
     setIsSubmitting(true)
     try {
-        const phone = selectedCountry + cleanedPhone
-      const newPhoneData = await phoneApi.create(phone, selectedNetwork.id)
+      if (!otpStep) {
+        await authApi.sendPhoneOtp({
+          phone: cleanedPhone,
+          phone_indicative: selectedCountry,
+          purpose: "user_phone",
+          brand: otpBrand(),
+        })
+        setOtpStep(true)
+        setOtpCode("")
+        toast.success(`Code SMS envoyé au +${selectedCountry} ${cleanedPhone}`)
+        return
+      }
+
+      if (otpCode.replace(/\D/g, "").length !== 6) {
+        toast.error("Entrez le code à 6 chiffres reçu par SMS")
+        return
+      }
+
+      const verifyResult = await authApi.verifyPhoneOtp({
+        phone: cleanedPhone,
+        phone_indicative: selectedCountry,
+        code: otpCode.replace(/\D/g, ""),
+        purpose: "user_phone",
+      })
+      const token = verifyResult.phone_verification_token
+      if (!token) {
+        toast.error("Vérification échouée. Réessayez.")
+        return
+      }
+
+      const phone = selectedCountry + cleanedPhone
+      const newPhoneData = await phoneApi.create(phone, selectedNetwork.id, token)
       setPhones(prev => [...prev, newPhoneData])
-      setNewPhone("")
-      setIsAddDialogOpen(false)
+      resetAddDialog()
       toast.success("Numéro de téléphone ajouté avec succès")
     } catch (error) {
       toast.error(getErrorMessage(error))
@@ -135,29 +189,61 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
   const handleEditPhone = async () => {
     if (!newPhone.trim() || !editingPhone || !selectedNetwork) return
 
-    // Validate and clean phone number
     const cleanedPhone = formatPhoneNumber(newPhone)
 
-    // Check if phone number contains only digits and length is between 6-8
     if (!/^\d+$/.test(cleanedPhone) || cleanedPhone.length < 6 || cleanedPhone.length > 8) {
       toast.error("Veuillez entrer un numéro de téléphone valide (6 à 8 chiffres)")
       return
     }
 
+    const phone = selectedEditCountry + cleanedPhone
+    const phoneChanged = String(editingPhone.phone) !== String(phone)
+
     setIsSubmitting(true)
     try {
-        const phone = selectedEditCountry + cleanedPhone
+      let token: string | undefined
+      if (phoneChanged) {
+        if (!editOtpStep) {
+          await authApi.sendPhoneOtp({
+            phone: cleanedPhone,
+            phone_indicative: selectedEditCountry,
+            purpose: "user_phone",
+            brand: otpBrand(),
+          })
+          setEditOtpStep(true)
+          setEditOtpCode("")
+          toast.success(`Code SMS envoyé au +${selectedEditCountry} ${cleanedPhone}`)
+          return
+        }
+
+        if (editOtpCode.replace(/\D/g, "").length !== 6) {
+          toast.error("Entrez le code à 6 chiffres reçu par SMS")
+          return
+        }
+
+        const verifyResult = await authApi.verifyPhoneOtp({
+          phone: cleanedPhone,
+          phone_indicative: selectedEditCountry,
+          code: editOtpCode.replace(/\D/g, ""),
+          purpose: "user_phone",
+        })
+        token = verifyResult.phone_verification_token
+        if (!token) {
+          toast.error("Vérification échouée. Réessayez.")
+          return
+        }
+      }
+
       const updatedPhone = await phoneApi.update(
         editingPhone.id,
         phone,
-        selectedNetwork.id
+        selectedNetwork.id,
+        token,
       )
-      setPhones(prev => prev.map(phone =>
-        phone.id === editingPhone.id ? updatedPhone : phone
+      setPhones(prev => prev.map(p =>
+        p.id === editingPhone.id ? updatedPhone : p
       ))
-      setNewPhone("")
-      setEditingPhone(null)
-      setIsEditDialogOpen(false)
+      resetEditDialog()
       toast.success("Numéro de téléphone modifié avec succès")
     } catch (error) {
       toast.error(getErrorMessage(error))
@@ -191,8 +277,11 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
 
   const openEditDialog = (phone: UserPhone) => {
     setEditingPhone(phone)
-    // Extract just the number part without the country code (first 3 digits)
+    const country = phone.phone.slice(0, 3)
+    setSelectedEditCountry(COUNTRIES.some((c) => c.code === country) ? country : "225")
     setNewPhone(phone.phone.slice(3))
+    setEditOtpStep(false)
+    setEditOtpCode("")
     setIsEditDialogOpen(true)
   }
 
@@ -305,18 +394,38 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
       </Card>
 
       {/* Add Phone Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <Dialog
+        open={isAddDialogOpen}
+        onOpenChange={(open) => {
+          setIsAddDialogOpen(open)
+          if (!open) {
+            setNewPhone("")
+            setOtpStep(false)
+            setOtpCode("")
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Ajouter un numéro de téléphone</DialogTitle>
             <DialogDescription>
-              Sélectionnez votre pays et entrez votre numéro de téléphone
+              {otpStep
+                ? "Entrez le code SMS reçu pour vérifier ce numéro"
+                : "Sélectionnez votre pays et entrez votre numéro de téléphone"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label htmlFor="country">Pays</Label>
-              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+              <Select
+                value={selectedCountry}
+                onValueChange={(value) => {
+                  setSelectedCountry(value)
+                  setOtpStep(false)
+                  setOtpCode("")
+                }}
+                disabled={otpStep}
+              >
                 <SelectTrigger id="country">
                   <SelectValue />
                 </SelectTrigger>
@@ -334,9 +443,14 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
               <Input
                 id="phone"
                 value={newPhone}
-                onChange={(e) => setNewPhone(formatPhoneNumber(e.target.value))}
+                onChange={(e) => {
+                  setNewPhone(formatPhoneNumber(e.target.value))
+                  setOtpStep(false)
+                  setOtpCode("")
+                }}
                 placeholder={selectedNetwork?.placeholder ?? "Ex: 012345678"}
                 maxLength={8}
+                disabled={otpStep}
               />
               {selectedNetwork?.indication && (
                 <p className="text-xs text-muted-foreground mt-1">
@@ -344,19 +458,62 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
                 </p>
               )}
             </div>
+            {otpStep && (
+              <div className="space-y-2">
+                <Label htmlFor="otp">Code SMS (6 chiffres)</Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  disabled={isSubmitting}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={isSubmitting}
+                  onClick={async () => {
+                    const cleanedPhone = formatPhoneNumber(newPhone)
+                    setIsSubmitting(true)
+                    try {
+                      await authApi.sendPhoneOtp({
+                        phone: cleanedPhone,
+                        phone_indicative: selectedCountry,
+                        purpose: "user_phone",
+                        brand: otpBrand(),
+                      })
+                      toast.success("Code SMS renvoyé")
+                    } catch (error) {
+                      toast.error(getErrorMessage(error))
+                    } finally {
+                      setIsSubmitting(false)
+                    }
+                  }}
+                >
+                  Renvoyer le code
+                </Button>
+              </div>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+            <Button variant="outline" onClick={resetAddDialog}>
               Annuler
             </Button>
             <Button onClick={handleAddPhone} disabled={!newPhone.trim() || isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Ajout...
+                  {otpStep ? "Vérification..." : "Envoi..."}
                 </>
+              ) : otpStep ? (
+                "Vérifier et ajouter"
               ) : (
-                "Ajouter"
+                "Recevoir un code SMS"
               )}
             </Button>
           </DialogFooter>
@@ -364,18 +521,34 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
       </Dialog>
 
       {/* Edit Phone Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog
+        open={isEditDialogOpen}
+        onOpenChange={(open) => {
+          setIsEditDialogOpen(open)
+          if (!open) resetEditDialog()
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Modifier le numéro de téléphone</DialogTitle>
             <DialogDescription>
-              Sélectionnez votre pays et modifiez votre numéro de téléphone
+              {editOtpStep
+                ? "Entrez le code SMS reçu pour vérifier ce numéro"
+                : "Sélectionnez votre pays et modifiez votre numéro de téléphone"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label htmlFor="editCountry">Pays</Label>
-              <Select value={selectedEditCountry} onValueChange={setSelectedEditCountry}>
+              <Select
+                value={selectedEditCountry}
+                onValueChange={(value) => {
+                  setSelectedEditCountry(value)
+                  setEditOtpStep(false)
+                  setEditOtpCode("")
+                }}
+                disabled={editOtpStep}
+              >
                 <SelectTrigger id="editCountry">
                   <SelectValue />
                 </SelectTrigger>
@@ -393,9 +566,14 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
               <Input
                 id="editPhone"
                 value={newPhone}
-                onChange={(e) => setNewPhone(formatPhoneNumber(e.target.value))}
+                onChange={(e) => {
+                  setNewPhone(formatPhoneNumber(e.target.value))
+                  setEditOtpStep(false)
+                  setEditOtpCode("")
+                }}
                 placeholder={selectedNetwork?.placeholder ?? "Ex: 0712345678"}
                 maxLength={8}
+                disabled={editOtpStep}
               />
               {selectedNetwork?.indication && (
                 <p className="text-xs text-muted-foreground mt-1">
@@ -403,19 +581,37 @@ export function PhoneStep({ selectedNetwork, selectedPhone, onSelect }: PhoneSte
                 </p>
               )}
             </div>
+            {editOtpStep && (
+              <div className="space-y-2">
+                <Label htmlFor="editOtp">Code SMS (6 chiffres)</Label>
+                <Input
+                  id="editOtp"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={editOtpCode}
+                  onChange={(e) => setEditOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  disabled={isSubmitting}
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button variant="outline" onClick={resetEditDialog}>
               Annuler
             </Button>
             <Button onClick={handleEditPhone} disabled={!newPhone.trim() || isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Modification...
+                  {editOtpStep ? "Vérification..." : "Envoi..."}
                 </>
+              ) : editOtpStep ? (
+                "Vérifier et modifier"
               ) : (
-                "Modifier"
+                "Enregistrer"
               )}
             </Button>
           </DialogFooter>
