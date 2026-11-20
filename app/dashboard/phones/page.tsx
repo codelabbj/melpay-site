@@ -37,8 +37,17 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const COUNTRIES = [
+    { code: "225", name: "Côte d'Ivoire (+225)" },
     { code: "223", name: "Mali (+223)" },
+    { code: "226", name: "Burkina Faso (+226)" },
+    { code: "221", name: "Sénégal (+221)" },
+    { code: "229", name: "Bénin (+229)" },
 ]
+
+const otpBrand = () =>
+  typeof window !== "undefined" && window.location.hostname.includes("fastxof")
+    ? "FastXOF"
+    : "Melpay"
 
 const phoneSchema = z.object({
   country: z.string().min(1, "Pays requis"),
@@ -133,7 +142,7 @@ export default function PhonesPage() {
           phone: cleanedPhone,
           phone_indicative: data.country,
           purpose: "user_phone",
-          brand: "Melpay",
+          brand: otpBrand(),
         })
         setOtpStep(true)
         setOtpCode("")
@@ -484,7 +493,7 @@ export default function PhonesPage() {
                                           phone: cleanedPhone,
                                           phone_indicative: values.country,
                                           purpose: "user_phone",
-                                          brand: "Melpay",
+                                          brand: otpBrand(),
                                         })
                                         toast.success("Code SMS renvoyé")
                                       } catch (error: any) {

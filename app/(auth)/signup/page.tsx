@@ -79,6 +79,10 @@ export default function SignupPage() {
   }
 
   const phoneDigits = (phone: string) => phone.replace(/\D/g, "")
+  const otpBrand = () =>
+    typeof window !== "undefined" && window.location.hostname.includes("fastxof")
+      ? "FastXOF"
+      : "Melpay"
 
   const onSubmit = async (data: SignupFormData) => {
     if (!termsAccepted) {
@@ -96,7 +100,7 @@ export default function SignupPage() {
             await authApi.sendPhoneOtp({
               phone: phoneDigits(data.phone),
               purpose: "registration",
-              brand: "Melpay",
+              brand: otpBrand(),
             })
             setShowOtpUi(true)
             toast.success("Code SMS envoyé. Saisissez-le ci-dessous puis validez à nouveau.")
@@ -162,7 +166,7 @@ export default function SignupPage() {
       await authApi.sendPhoneOtp({
         phone: phoneDigits(phone),
         purpose: "registration",
-        brand: "Melpay",
+        brand: otpBrand(),
       })
       toast.success("Nouveau code envoyé.")
     } catch (error) {
