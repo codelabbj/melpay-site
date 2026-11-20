@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { AlertCircle, ArrowDownToLine, ArrowUpFromLine } from "lucide-react"
+import { AlertCircle, ArrowDownToLine, ArrowUpFromLine, ExternalLink, PlayCircle } from "lucide-react"
 import type { Platform, UserAppId, Network, UserPhone } from "@/lib/types"
 
 interface AmountStepProps {
@@ -231,6 +231,66 @@ export function AmountStep({
           </div>
         </CardContent>
       </Card>
+
+      {/* Tutoriels vidéo (comme Blaffa) */}
+      {(type === "deposit"
+        ? selectedPlatform.deposit_tuto_link
+        : selectedPlatform.withdrawal_tuto_link || selectedPlatform.why_withdrawal_fail) && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <PlayCircle className="h-5 w-5 text-primary" />
+              Besoin d&apos;aide ?
+            </CardTitle>
+            <CardDescription>
+              {type === "deposit"
+                ? `Regardez comment déposer sur ${selectedPlatform.name}.`
+                : `Générez d'abord un code de retrait sur ${selectedPlatform.name}. Nos tutoriels vous montrent comment.`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {type === "deposit" && selectedPlatform.deposit_tuto_link && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() =>
+                  window.open(selectedPlatform.deposit_tuto_link!, "_blank", "noopener,noreferrer")
+                }
+              >
+                <span>Comment déposer</span>
+                <ExternalLink className="h-4 w-4 opacity-70" />
+              </Button>
+            )}
+            {type === "withdrawal" && selectedPlatform.withdrawal_tuto_link && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() =>
+                  window.open(selectedPlatform.withdrawal_tuto_link!, "_blank", "noopener,noreferrer")
+                }
+              >
+                <span>Obtenir un code sur {selectedPlatform.name}</span>
+                <ExternalLink className="h-4 w-4 opacity-70" />
+              </Button>
+            )}
+            {type === "withdrawal" && selectedPlatform.why_withdrawal_fail && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() =>
+                  window.open(selectedPlatform.why_withdrawal_fail!, "_blank", "noopener,noreferrer")
+                }
+              >
+                <span>Pourquoi mon retrait a échoué ?</span>
+                <ExternalLink className="h-4 w-4 opacity-70" />
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Withdrawal Code (only for withdrawals) */}
       {type === "withdrawal" && (

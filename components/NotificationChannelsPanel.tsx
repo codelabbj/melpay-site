@@ -344,6 +344,9 @@ export default function NotificationChannelsPanel({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [smsOtpStep, setSmsOtpStep] = useState(false);
+  const [smsOtpCode, setSmsOtpCode] = useState('');
+  const [smsOtpPhoneKey, setSmsOtpPhoneKey] = useState('');
   const [pollingTelegram, setPollingTelegram] = useState(false);
   const telegramSubmittingRef = useRef(false);
   const skipStatusCallbackRef = useRef(true);
@@ -467,6 +470,15 @@ export default function NotificationChannelsPanel({
   }, [loadData]);
 
   useEffect(() => {
+    const key = `${countryCode}${smsPhone.replace(/\D/g, '')}`;
+    if (smsOtpStep && smsOtpPhoneKey && key !== smsOtpPhoneKey) {
+      setSmsOtpStep(false);
+      setSmsOtpCode('');
+      setSmsOtpPhoneKey('');
+    }
+  }, [countryCode, smsPhone, smsOtpStep, smsOtpPhoneKey]);
+
+  useEffect(() => {
     if (!pollingTelegram) return;
 
     let attempts = 0;
@@ -562,6 +574,38 @@ export default function NotificationChannelsPanel({
     }
   };
 
+  const sendSmsOtp = async (digitsOnly: string, phoneKey: string) => {
+    await api.post('/auth/phone-otp/send', {
+      phone: digitsOnly,
+      phone_indicative: countryCode,
+      purpose: 'sms_phone',
+      brand: 'Melpay',
+    });
+    setSmsOtpStep(true);
+    setSmsOtpPhoneKey(phoneKey);
+    setSmsOtpCode('');
+    setSuccess(`Un code à 6 chiffres a été envoyé au +${countryCode} ${smsPhone.trim()}.`);
+  };
+
+  const handleSmsResendOtp = async () => {
+    const digitsOnly = smsPhone.replace(/\D/g, '');
+    if (digitsOnly.length < 6) {
+      setError('Veuillez entrer un numéro de téléphone valide.');
+      return;
+    }
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    try {
+      await sendSmsOtp(digitsOnly, `${countryCode}${digitsOnly}`);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.response?.data?.details;
+      setError(message === 'SMS_DISABLED' ? 'SMS activé mais pas encore configuré côté serveur.' : message || "Impossible d'envoyer le code SMS.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSmsSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
@@ -573,29 +617,61 @@ export default function NotificationChannelsPanel({
       return;
     }
 
+    const phoneKey = `${countryCode}${digitsOnly}`;
+
+    if (smsOtpStep) {
+      if (smsOtpCode.replace(/\D/g, '').length !== 6) {
+        setError('Entrez le code à 6 chiffres reçu par SMS.');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
+      if (!smsOtpStep) {
+        await sendSmsOtp(digitsOnly, phoneKey);
+        return;
+      }
+
+      const verifyResponse = await api.post('/auth/phone-otp/verify', {
+        phone: digitsOnly,
+        phone_indicative: countryCode,
+        code: smsOtpCode.replace(/\D/g, ''),
+        purpose: 'sms_phone',
+      });
+      const token = verifyResponse.data?.phone_verification_token;
+      if (!token) {
+        setError('Vérification échouée. Réessayez.');
+        return;
+      }
+
       const response = await api.post('/auth/sms-phone', {
         phone_indicative: countryCode,
         phone: digitsOnly,
+        phone_verification_token: token,
       });
+      setSmsOtpStep(false);
+      setSmsOtpCode('');
+      setSmsOtpPhoneKey('');
       setSmsVerified(Boolean(response.data?.sms_verified));
       if (mode === 'prompt') {
         setShowSms(false);
         onAllDone?.();
       }
-      setSuccess('Numéro SMS confirmé. Un message de test vous a été envoyé.');
+      setSuccess('Numéro SMS confirmé. Vous recevrez vos alertes sur ce numéro.');
       onStatusChange?.();
       invalidateChannelSessionCache();
       await loadData();
     } catch (err: any) {
-      const message = err?.response?.data?.message || err?.response?.data?.details;
+      const message = err?.response?.data?.message || err?.response?.data?.details || err?.response?.data?.error;
       setError(
         message === 'SMS_DISABLED'
           ? 'SMS activé mais pas encore configuré côté serveur.'
           : message === 'SMS_SEND_FAILED'
             ? "Impossible d'envoyer le SMS de confirmation."
-            : 'Impossible de valider ce numéro.'
+            : typeof message === 'string' && message
+              ? message
+              : 'Impossible de valider ce numéro.'
       );
     } finally {
       setLoading(false);
@@ -869,7 +945,7 @@ export default function NotificationChannelsPanel({
             <StepList
               steps={[
                 'Entrez le numéro où vous souhaitez recevoir les SMS.',
-                'Nous vous envoyons un message de confirmation.',
+                'Recevez un code à 6 chiffres par SMS et saisissez-le ci-dessous.',
                 'Vos alertes Melpay arriveront ensuite par SMS.',
               ]}
             />
@@ -879,6 +955,7 @@ export default function NotificationChannelsPanel({
                   value={countryCode}
                   onChange={(event) => setCountryCode(event.target.value)}
                   className={SELECT_CLASS}
+                  disabled={loading}
                 >
                   {countries.map((country) => (
                     <option key={country.code} value={country.code} className="bg-white text-slate-900 dark:bg-slate-800 dark:text-white">
@@ -892,14 +969,45 @@ export default function NotificationChannelsPanel({
                   onChange={(event) => setSmsPhone(event.target.value)}
                   placeholder="Numéro mobile"
                   className={INPUT_CLASS}
+                  disabled={loading}
                 />
               </div>
+              {smsOtpStep && (
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-600 dark:text-slate-300">Code SMS (6 chiffres)</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={smsOtpCode}
+                    onChange={(event) => setSmsOtpCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="000000"
+                    className={INPUT_FULL_CLASS}
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSmsResendOtp}
+                    disabled={loading}
+                    className={`w-full rounded-xl px-4 py-2.5 text-xs font-semibold disabled:opacity-60 ${BTN_OUTLINE}`}
+                  >
+                    Renvoyer le code
+                  </button>
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={loading}
                 className={`w-full rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60 ${BTN_PRIMARY}`}
               >
-                {loading ? 'Envoi...' : smsVerified ? 'Modifier le SMS' : 'Confirmer mon numéro SMS'}
+                {loading
+                  ? 'Traitement...'
+                  : smsOtpStep
+                    ? 'Vérifier le code'
+                    : smsVerified
+                      ? 'Modifier le SMS'
+                      : 'Recevoir un code SMS'}
               </button>
             </form>
           </ChannelCard>

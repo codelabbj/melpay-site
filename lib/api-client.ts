@@ -25,10 +25,42 @@ export const authApi = {
     last_name: string
     email: string
     phone: string
+    phone_indicative?: string
     password: string
     re_password: string
+    referrer_code?: string
+    phone_verification_token?: string
   }) => {
     const { data } = await api.post("/auth/registration", userData)
+    return data
+  },
+
+  sendPhoneOtp: async (payload: {
+    phone: string
+    phone_indicative?: string
+    purpose: "registration" | "sms_phone"
+    brand?: string
+  }) => {
+    const { data } = await api.post<{
+      success: boolean
+      details?: string
+      error?: string
+    }>("/auth/phone-otp/send", payload)
+    return data
+  },
+
+  verifyPhoneOtp: async (payload: {
+    phone: string
+    phone_indicative?: string
+    code: string
+    purpose: "registration" | "sms_phone"
+  }) => {
+    const { data } = await api.post<{
+      success: boolean
+      phone_verification_token?: string
+      details?: string
+      error?: string
+    }>("/auth/phone-otp/verify", payload)
     return data
   },
 

@@ -17,6 +17,11 @@ import Image from "next/image"
 import logo from "@/public/logo.png"
 import { GoogleButton } from "@/components/google-button"
 import AppDownloadButton from "@/components/AppDownloadButton"
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp"
 
 const getSignupSchema = () => {
   const baseSchema = {
@@ -43,6 +48,9 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showRePassword, setShowRePassword] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
+  const [showOtpUi, setShowOtpUi] = useState(false)
+  const [otpCode, setOtpCode] = useState("")
+  const [phoneVerificationToken, setPhoneVerificationToken] = useState("")
   const referralBonusEnabled = settings?.referral_bonus || false
   const signupSchema = getSignupSchema()
   type SignupFormData = z.infer<typeof signupSchema>
@@ -50,6 +58,7 @@ export default function SignupPage() {
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -69,6 +78,8 @@ export default function SignupPage() {
     )
   }
 
+  const phoneDigits = (phone: string) => phone.replace(/\D/g, "")
+
   const onSubmit = async (data: SignupFormData) => {
     if (!termsAccepted) {
       toast.error("Veuillez accepter les conditions d'utilisation")
@@ -76,21 +87,86 @@ export default function SignupPage() {
     }
     setIsLoading(true)
     try {
-        const query:typeof data = {
-            first_name: data.first_name,
-            last_name: data.last_name,
-            email: data.email,
-            phone: data.phone,
-            password: data.password,
-            re_password: data.re_password
+      let verificationToken = phoneVerificationToken
+      let smsRequired = true
+
+      if (!verificationToken) {
+        if (!showOtpUi) {
+          try {
+            await authApi.sendPhoneOtp({
+              phone: phoneDigits(data.phone),
+              purpose: "registration",
+              brand: "Melpay",
+            })
+            setShowOtpUi(true)
+            toast.success("Code SMS envoyé. Saisissez-le ci-dessous puis validez à nouveau.")
+            return
+          } catch (sendErr: any) {
+            if (sendErr?.response?.data?.error === "sms_disabled") {
+              smsRequired = false
+            } else {
+              throw sendErr
+            }
+          }
         }
-        if (referralBonusEnabled) query.referrer_code = data.referrer_code
+
+        if (smsRequired) {
+          if (otpCode.replace(/\D/g, "").length !== 6) {
+            toast.error("Entrez le code à 6 chiffres reçu par SMS")
+            return
+          }
+          const verifyResult = await authApi.verifyPhoneOtp({
+            phone: phoneDigits(data.phone),
+            code: otpCode.replace(/\D/g, ""),
+            purpose: "registration",
+          })
+          verificationToken = verifyResult.phone_verification_token || ""
+          if (!verificationToken) {
+            toast.error(verifyResult.details || "Code invalide")
+            return
+          }
+          setPhoneVerificationToken(verificationToken)
+        }
+      }
+
+      const query: SignupFormData & { phone_verification_token?: string } = {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        phone: data.phone,
+        password: data.password,
+        re_password: data.re_password,
+      }
+      if (verificationToken) {
+        query.phone_verification_token = verificationToken
+      }
+      if (referralBonusEnabled) query.referrer_code = data.referrer_code
       await authApi.register(query)
       toast.success("Compte créé avec succès! Veuillez vous connecter.")
       router.push("/login")
     } catch (error) {
-      // Error is handled by api interceptor
       console.error("Signup error:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleResendSignupOtp = async () => {
+    const phone = getValues("phone")
+    if (!phone) {
+      toast.error("Indiquez votre numéro de téléphone")
+      return
+    }
+    setIsLoading(true)
+    try {
+      await authApi.sendPhoneOtp({
+        phone: phoneDigits(phone),
+        purpose: "registration",
+        brand: "Melpay",
+      })
+      toast.success("Nouveau code envoyé.")
+    } catch (error) {
+      console.error("Resend OTP error:", error)
     } finally {
       setIsLoading(false)
     }
@@ -274,6 +350,40 @@ export default function SignupPage() {
                       )
                   }
 
+              {showOtpUi && (
+                <div className="space-y-3 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Saisissez le code à 6 chiffres envoyé par SMS à votre numéro.
+                  </p>
+                  <div className="flex justify-center">
+                    <InputOTP
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={setOtpCode}
+                      disabled={isLoading}
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleResendSignupOtp}
+                    disabled={isLoading}
+                  >
+                    Renvoyer le code
+                  </Button>
+                </div>
+              )}
+
               {/* Terms checkbox */}
               <div className="flex items-start gap-3 pt-1">
                 <input
@@ -303,6 +413,8 @@ export default function SignupPage() {
                     <span className="hidden sm:inline">Création en cours...</span>
                     <span className="sm:hidden">Création...</span>
                   </>
+                ) : showOtpUi && !phoneVerificationToken ? (
+                  "Vérifier et créer mon compte"
                 ) : (
                   "Créer mon compte"
                 )}
