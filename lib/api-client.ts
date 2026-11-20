@@ -38,7 +38,7 @@ export const authApi = {
   sendPhoneOtp: async (payload: {
     phone: string
     phone_indicative?: string
-    purpose: "registration" | "sms_phone"
+    purpose: "registration" | "sms_phone" | "user_phone"
     brand?: string
   }) => {
     const { data } = await api.post<{
@@ -53,7 +53,7 @@ export const authApi = {
     phone: string
     phone_indicative?: string
     code: string
-    purpose: "registration" | "sms_phone"
+    purpose: "registration" | "sms_phone" | "user_phone"
   }) => {
     const { data } = await api.post<{
       success: boolean
@@ -97,18 +97,29 @@ export const phoneApi = {
     return data
   },
 
-  create: async (phone: string, network: number) => {
+  create: async (phone: string, network: number, phoneVerificationToken?: string) => {
     const { data } = await api.post<UserPhone>("/mobcash/user-phone/", {
       phone,
       network,
+      ...(phoneVerificationToken
+        ? { phone_verification_token: phoneVerificationToken }
+        : {}),
     })
     return data
   },
 
-  update: async (id: number, phone: string, network: number) => {
+  update: async (
+    id: number,
+    phone: string,
+    network: number,
+    phoneVerificationToken?: string,
+  ) => {
     const { data } = await api.patch<UserPhone>(`/mobcash/user-phone/${id}/`, {
       phone,
       network,
+      ...(phoneVerificationToken
+        ? { phone_verification_token: phoneVerificationToken }
+        : {}),
     })
     return data
   },

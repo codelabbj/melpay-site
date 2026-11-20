@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { phoneApi, userAppIdApi, networkApi, platformApi } from "@/lib/api-client"
+import { authApi, phoneApi, userAppIdApi, networkApi, platformApi } from "@/lib/api-client"
 import type {UserPhone, UserAppId, Network, Platform, BetId} from "@/lib/types"
 import { toast } from "react-hot-toast"
 import { Loader2, Phone, Plus, Trash2, Edit, Smartphone, ArrowLeft, AlertCircle } from "lucide-react"
@@ -64,6 +64,8 @@ export default function PhonesPage() {
   const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false)
   const [isAppIdDialogOpen, setIsAppIdDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [otpStep, setOtpStep] = useState(false)
+  const [otpCode, setOtpCode] = useState("")
   const [editingPhone, setEditingPhone] = useState<UserPhone | null>(null)
   const [editingAppId, setEditingAppId] = useState<UserAppId | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ type: "phone" | "appId"; id: number } | null>(null)
@@ -115,33 +117,69 @@ export default function PhonesPage() {
   const handlePhoneSubmit = async (data: PhoneFormData) => {
     setIsSubmitting(true)
     try {
-      // Validate and clean phone number
       const cleanedPhone = data.phone.trim().replace(/\s+/g, "")
 
-      // Check if phone number contains only digits
       if (!/^\d+$/.test(cleanedPhone)) {
         toast.error("Veuillez entrer uniquement des chiffres")
-        setIsSubmitting(false)
         return
       }
 
-      // Combine country code with cleaned phone number
       const fullPhone = data.country + cleanedPhone
+      const phoneChanged =
+        !editingPhone || String(editingPhone.phone) !== String(fullPhone)
+
+      if (phoneChanged && !otpStep) {
+        await authApi.sendPhoneOtp({
+          phone: cleanedPhone,
+          phone_indicative: data.country,
+          purpose: "user_phone",
+          brand: "Melpay",
+        })
+        setOtpStep(true)
+        setOtpCode("")
+        toast.success(`Code SMS envoyé au +${data.country} ${cleanedPhone}`)
+        return
+      }
+
+      let token: string | undefined
+      if (phoneChanged) {
+        if (otpCode.replace(/\D/g, "").length !== 6) {
+          toast.error("Entrez le code à 6 chiffres reçu par SMS")
+          return
+        }
+        const verifyResult = await authApi.verifyPhoneOtp({
+          phone: cleanedPhone,
+          phone_indicative: data.country,
+          code: otpCode.replace(/\D/g, ""),
+          purpose: "user_phone",
+        })
+        token = verifyResult.phone_verification_token
+        if (!token) {
+          toast.error("Vérification échouée. Réessayez.")
+          return
+        }
+      }
 
       if (editingPhone) {
-        await phoneApi.update(editingPhone.id, fullPhone, data.network)
+        await phoneApi.update(editingPhone.id, fullPhone, data.network, token)
         toast.success("Numéro modifié avec succès!")
       } else {
-        await phoneApi.create(fullPhone, data.network)
+        await phoneApi.create(fullPhone, data.network, token)
         toast.success("Numéro ajouté avec succès!")
       }
       setIsPhoneDialogOpen(false)
+      setOtpStep(false)
+      setOtpCode("")
       phoneForm.reset()
       setEditingPhone(null)
       loadData()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Phone operation error:", error)
-      toast.error("Erreur lors de l'opération téléphone")
+      const message =
+        error?.response?.data?.details ||
+        error?.response?.data?.error ||
+        "Erreur lors de l'opération téléphone"
+      toast.error(typeof message === "string" ? message : "Erreur lors de l'opération téléphone")
     } finally {
       setIsSubmitting(false)
     }
@@ -238,6 +276,8 @@ export default function PhonesPage() {
   const closePhoneDialog = () => {
     setIsPhoneDialogOpen(false)
     setEditingPhone(null)
+    setOtpStep(false)
+    setOtpCode("")
     phoneForm.reset()
   }
 
@@ -306,10 +346,25 @@ export default function PhonesPage() {
                       </div>
                   </div>
 
-                  <Dialog open={isPhoneDialogOpen} onOpenChange={setIsPhoneDialogOpen}>
+                  <Dialog
+                    open={isPhoneDialogOpen}
+                    onOpenChange={(open) => {
+                      setIsPhoneDialogOpen(open)
+                      if (!open) {
+                        setEditingPhone(null)
+                        setOtpStep(false)
+                        setOtpCode("")
+                        phoneForm.reset()
+                      }
+                    }}
+                  >
                       <DialogTrigger asChild>
                           <Button
-                              onClick={() => setEditingPhone(null)}
+                              onClick={() => {
+                                setEditingPhone(null)
+                                setOtpStep(false)
+                                setOtpCode("")
+                              }}
                               size="sm"
                               className="w-auto shadow-sm hover:shadow-md transition-shadow"
                           >
@@ -383,8 +438,13 @@ export default function PhonesPage() {
                                               id="phone"
                                               type="tel"
                                               placeholder={activeNetwork?.placeholder ?? "Ex: 012345678"}
-                                              {...phoneForm.register("phone")}
-                                              disabled={isSubmitting}
+                                              {...phoneForm.register("phone", {
+                                                onChange: () => {
+                                                  setOtpStep(false)
+                                                  setOtpCode("")
+                                                },
+                                              })}
+                                              disabled={isSubmitting || otpStep}
                                           />
                                           {activeNetwork?.indication && (
                                             <p className="text-xs text-muted-foreground">
@@ -395,6 +455,52 @@ export default function PhonesPage() {
                                       <p className="text-sm text-destructive">{phoneForm.formState.errors.phone.message}</p>
                                   )}
                               </div>
+
+                              {otpStep && (
+                                <div className="space-y-2">
+                                  <Label htmlFor="otp">Code SMS (6 chiffres)</Label>
+                                  <Input
+                                    id="otp"
+                                    type="text"
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
+                                    maxLength={6}
+                                    placeholder="000000"
+                                    value={otpCode}
+                                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                                    disabled={isSubmitting}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    disabled={isSubmitting}
+                                    onClick={async () => {
+                                      const values = phoneForm.getValues()
+                                      const cleanedPhone = values.phone.trim().replace(/\s+/g, "")
+                                      setIsSubmitting(true)
+                                      try {
+                                        await authApi.sendPhoneOtp({
+                                          phone: cleanedPhone,
+                                          phone_indicative: values.country,
+                                          purpose: "user_phone",
+                                          brand: "Melpay",
+                                        })
+                                        toast.success("Code SMS renvoyé")
+                                      } catch (error: any) {
+                                        toast.error(
+                                          error?.response?.data?.details ||
+                                            "Impossible de renvoyer le code",
+                                        )
+                                      } finally {
+                                        setIsSubmitting(false)
+                                      }
+                                    }}
+                                  >
+                                    Renvoyer le code
+                                  </Button>
+                                </div>
+                              )}
 
                               <div className="flex gap-3">
                                   <Button
@@ -409,12 +515,14 @@ export default function PhonesPage() {
                                       {isSubmitting ? (
                                           <>
                                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                              Enregistrement...
+                                              {otpStep ? "Vérification..." : "Envoi du code..."}
                                           </>
+                                      ) : otpStep ? (
+                                          "Vérifier et enregistrer"
                                       ) : editingPhone ? (
-                                          "Modifier"
+                                          "Enregistrer"
                                       ) : (
-                                          "Ajouter"
+                                          "Recevoir un code SMS"
                                       )}
                                   </Button>
                               </div>
